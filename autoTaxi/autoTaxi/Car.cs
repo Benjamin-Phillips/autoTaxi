@@ -26,8 +26,7 @@ namespace autoTaxi{
 
         // Constructor
         public Car(Position pos) {
-            this.pos.x = pos.x;
-            this.pos.y = pos.y;
+            this.pos = pos;
             passengers = new List<Request>();
         }
 
