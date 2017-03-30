@@ -1,7 +1,0 @@
-C:\Users\Ben\Desktop\AI\autoTaxi\autoTaxi\bin\Debug\autoTaxi.exe.config
-E:\Austen\Documents\autoTaxi\autoTaxi\autoTaxi\bin\Debug\autoTaxi.exe.config
-E:\Austen\Documents\autoTaxi\autoTaxi\autoTaxi\bin\Debug\autoTaxi.exe
-E:\Austen\Documents\autoTaxi\autoTaxi\autoTaxi\bin\Debug\autoTaxi.pdb
-E:\Austen\Documents\autoTaxi\autoTaxi\autoTaxi\obj\Debug\autoTaxi.csprojResolveAssemblyReference.cache
-E:\Austen\Documents\autoTaxi\autoTaxi\autoTaxi\obj\Debug\autoTaxi.exe
-E:\Austen\Documents\autoTaxi\autoTaxi\autoTaxi\obj\Debug\autoTaxi.pdb
