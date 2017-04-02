@@ -23,7 +23,7 @@ namespace autoTaxi {
             get; private set;
         }
         /// <summary>
-        /// Time the request is 'created'.
+        /// Time the request is submitted in seconds from start of day.
         /// </summary>
         public int time {
             get; private set;
@@ -35,21 +35,54 @@ namespace autoTaxi {
             time = t;
         }
 
-        public static List<Request> generateRequests(int frequency, int simulationTime, double medianTripDistance) {
+        /// <summary>
+        /// Simulates ride requests over a time period given a frequency, median distance & deviation.
+        /// </summary>
+        /// <param name="frequency"> seconds per request.</param>
+        /// <param name="simulationTime"> seconds of simulation time.</param>
+        /// <param name="medianTripDistance"> distance in feet.</param>
+        /// <param name="stdDev"> deviation in feet.</param>
+        /// <returns></returns>
+        public static List<Request> generateRequests(int frequency, int simulationTime, double medianTripDistance, double stdDev) {
             List<Request> requests = new List<Request>();
             Random rand = new Random();
             int time = 0;
             while(time <= simulationTime) {
-                Position start = new Position(0, 0); //TODO generate this randomly.
-                Position end = new Position(1, 1);
-                int delta = rand.Next() % (2 * frequency + 1);
-                requests.Add(new Request(start, end, delta));
-                time += delta;
+                double distance = randomNormal(medianTripDistance, stdDev, rand);
+                double theta = ((rand.NextDouble() * 360) * Math.PI) / 180; //radians 0 - 6.28
+
+                Position start = new Position((rand.NextDouble() * 45420.274), (rand.NextDouble() * 45420.274)); //random point in 8.6 mi x 8.6 mi area.
+                Position end = new Position(start.x + (distance * Math.Cos(theta)), start.y + (distance * Math.Sin(theta)));
+
+                int deltaTime = rand.Next() % (2 * frequency + 1);
+                requests.Add(new Request(start, end, time + deltaTime));
+                time += deltaTime;
             }
             return requests;
         }
+
+        /// <summary>
+        /// Generates random values with a semi-normal distribution. Max = mean + 3*std.dev, Min = 0
+        /// </summary>
+        /// <param name="mean"></param>
+        /// <param name="stdDev"></param>
+        /// <returns></returns>
+        public static double randomNormal(double mean, double stdDev, Random rand) {
+            double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
+            double u2 = 1.0 - rand.NextDouble();
+            double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
+                         Math.Sin(2.0 * Math.PI * u2); //random normal(0,1)
+            double randStdDev = (mean + stdDev * randStdNormal) % (mean + (3 * stdDev)); //random normal(mean,stdDev^2)
+            if(randStdDev < 0) {
+                randStdDev += (mean + (3 * stdDev));
+            }
+            return randStdDev;
+        }
     }
 
+    /// <summary>
+    /// x, y position from origin in feet. 1 mile = 5280 feet.
+    /// </summary>
     public struct Position {
         public double x;
         public double y;
