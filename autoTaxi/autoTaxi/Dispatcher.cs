@@ -18,7 +18,7 @@ namespace autoTaxi{
 
             for(int i = 0; i < cars.Count; i++) {
                 dist = distance(cars[i].pos, curRequest.start);
-                if(dist < shortestDist && cars[i].passengers + curRequest.passengers <= Car.capacity) {
+                if(dist < shortestDist && cars[i].Passengers + curRequest.passengers <= Car.capacity) {
                     shortestDist = dist;
                     bestCarIndex = i;
                 }
@@ -28,7 +28,7 @@ namespace autoTaxi{
                 return false;
             }
             else { 
-                cars[bestCarIndex].passengers += curRequest.passengers;
+                cars[bestCarIndex].Passengers += curRequest.passengers;
                 cars[bestCarIndex].requests.Insert(0, new Request(new autoTaxi.Position(0, 0), curRequest.start, curRequest.time, 0));
                 cars[bestCarIndex].requests.Add(curRequest);
                 greedySort(cars[bestCarIndex].requests);

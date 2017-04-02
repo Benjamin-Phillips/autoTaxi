@@ -9,6 +9,7 @@ namespace autoTaxi{
         // Speed of each car in feet per second
         public const double speed = 36.6667; // 36.6667 fps = 25 mph
         public const int capacity = 4;
+        private int passengers = 0;
 
         // Running delivery time avg. Update every time you drop off a person.
         public double deliveryTimeAvg {
@@ -25,8 +26,10 @@ namespace autoTaxi{
             get; set;
         }
 
-        public int passengers {
-            get { return passengers; }
+        public int Passengers {
+            get {
+                return passengers;
+            }
             set {
                 if (value >= 0) {
                     passengers = value;

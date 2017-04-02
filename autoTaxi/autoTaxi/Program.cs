@@ -31,13 +31,13 @@ namespace autoTaxi {
         static public void update(int elapsedTime, List<Car> cars) {
             foreach(Car car in cars) {
                 double travelDistance = Car.speed * elapsedTime;
-                while (Dispatcher.distance(car.requests[0].end,  car.pos) < travelDistance) {
+                while (car.requests.Count > 0 && Dispatcher.distance(car.requests[0].end, car.pos) < travelDistance) {
                     travelDistance -= Dispatcher.distance(car.requests[0].end, car.pos);
                     car.pos = car.requests[0].end;
-                    car.passengers -= car.requests[0].passengers;
+                    car.Passengers -= car.requests[0].passengers;
                     car.requests.RemoveAt(0);
                 }
-                if(travelDistance > 0) {
+                if(travelDistance > 0 && car.requests.Count > 0) {
                     double angle = Math.Atan((Math.Abs(car.pos.y - car.requests[0].end.y) / Math.Abs(car.pos.x - car.requests[0].end.x)));
                     car.pos = new Position(car.pos.x + travelDistance * Math.Cos(angle), car.pos.y + travelDistance * Math.Sin(angle));
                 }
