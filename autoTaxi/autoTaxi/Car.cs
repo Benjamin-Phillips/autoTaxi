@@ -22,7 +22,7 @@ namespace autoTaxi{
 
         // Current position of the car
         public Position pos {
-            get; private set;
+            get; set;
         }
 
         public int passengers {
