@@ -29,10 +29,15 @@ namespace autoTaxi {
             get; private set;
         }
 
-        public Request(Position s, Position e, int t) {
+        public int passengers {
+            get; private set;
+        }
+
+        public Request(Position s, Position e, int t, int p = 1) {
             start = s;
             end = e;
             time = t;
+            passengers = p;
         }
 
         public static List<Request> generateRequests(int frequency, int simulationTime, double medianTripDistance) {
