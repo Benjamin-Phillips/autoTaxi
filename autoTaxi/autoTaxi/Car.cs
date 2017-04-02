@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace autoTaxi{
     public class Car{
-        // Speed of each car
-        static public int speed;
+        // Speed of each car in feet per second
+        public const double speed = 36.6667; // 36.6667 fps = 25 mph
         public const int capacity = 4;
 
         // Running delivery time avg. Update every time you drop off a person.
@@ -40,9 +40,9 @@ namespace autoTaxi{
             requests = new List<Request>();
         }
 
-        // Update current locatoin using elapsed time, speed, and routes
+        // Update current location using elapsed time, speed, and routes
         public void update(int elapsedTime) {
-            int distanceTraveled = elapsedTime * speed;
+            double distanceTraveled = elapsedTime * speed;
 
 
         }
