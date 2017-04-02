@@ -9,37 +9,78 @@ namespace autoTaxi {
         static void Main(string[] args) {
             //Area of Logan = 18.5 sq. mi. = 4.3012 mi x 4.3012 mi = 22710.1387 ft * 22710.137 ft
             //Median commute time cache county = 16.8 min. or 7.0 mi. at 25 mph. std. dev. = 4 min. = 1.66667 mi.
-            //
-            int frequency = 5; //5 minutes / request
+            int vehicles = 5;
+            int frequency = 5 * 60; //60 seconds / request
             int simTime = 3600; //3600 seconds = 1 hour
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
             double gridWidth = 45420.274; //width of the area ~8.6 mi in feet
             //testGenerateRequests(medianDist, stdDev, gridWidth);
             List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
-            List<Car> cars = generateCars(10, gridWidth);
+            List<Car> cars = generateCars(vehicles, gridWidth);
 
             int prevTime = 0;
             for(int i = 0; i < requests.Count; i++) {
                 int elapsedTime = requests[i].time - prevTime;
                 prevTime = requests[i].time;
+                Console.WriteLine("\tRequest {0}/{1}: {2} -> {3}", i + 1, requests.Count, requests[i].start, requests[i].end);
+                Console.ReadKey();
+                Console.Write("\b");
                 Dispatcher.greedy(cars, requests[i]);
+                foreach(Car c in cars) {
+                    Console.WriteLine(c + ", dist: {0:f}", Dispatcher.distance(c.pos, requests[i].start) / 5280);
+                }
+                Console.ReadKey();
+                Console.Write("\b");
                 update(elapsedTime, cars);
+            }
+
+            //determine times between remaining dropoffs
+            List<double> times = new List<double>();
+            foreach(Car c in cars) {
+                Position pos = c.pos;
+                for(int i = 0; i < c.requests.Count; i++) {
+                    times.Add(Dispatcher.distance(c.requests[i].end, pos) / Car.speed);
+                    pos = c.requests[i].end;
+                }
+            }
+            times.Sort();
+            //finish delivering remaining passengers once all requests are finished.
+            foreach(double t in times) {
+                update((int)t, cars);
+                Console.WriteLine();
+                foreach(Car c in cars) {
+                    if(c.requests.Count > 0) {
+                        Console.WriteLine(c + " next: " + c.requests[0].end);
+                    }
+                }
             }
         }
 
         static public void update(int elapsedTime, List<Car> cars) {
             foreach(Car car in cars) {
                 double travelDistance = Car.speed * elapsedTime;
+                //move car through dropoff points
                 while (car.requests.Count > 0 && Dispatcher.distance(car.requests[0].end, car.pos) < travelDistance) {
                     travelDistance -= Dispatcher.distance(car.requests[0].end, car.pos);
                     car.pos = car.requests[0].end;
                     car.Passengers -= car.requests[0].passengers;
                     car.requests.RemoveAt(0);
                 }
+                //next point further than remaining travel distance
                 if(travelDistance > 0 && car.requests.Count > 0) {
-                    double angle = Math.Atan((Math.Abs(car.pos.y - car.requests[0].end.y) / Math.Abs(car.pos.x - car.requests[0].end.x)));
-                    car.pos = new Position(car.pos.x + travelDistance * Math.Cos(angle), car.pos.y + travelDistance * Math.Sin(angle));
+                    double deltaX = car.pos.x - car.requests[0].end.x;
+                    double deltaY = car.pos.y - car.requests[0].end.y;
+                    double angle = Math.Atan((Math.Abs(deltaY) / Math.Abs(deltaX)));
+                    double xDir = 1;
+                    double yDir = 1;
+                    if(deltaX > 0) {
+                        xDir = -1;
+                    }
+                    if(deltaY > 0) {
+                        yDir = -1;
+                    }
+                    car.pos = new Position(car.pos.x + travelDistance * Math.Cos(angle) * xDir, car.pos.y + travelDistance * Math.Sin(angle) * yDir);
                 }
             }
         }

@@ -10,6 +10,7 @@ namespace autoTaxi{
         public const double speed = 36.6667; // 36.6667 fps = 25 mph
         public const int capacity = 4;
         private int passengers = 0;
+        private static int id = 0;
 
         // Running delivery time avg. Update every time you drop off a person.
         public double deliveryTimeAvg {
@@ -26,6 +27,10 @@ namespace autoTaxi{
             get; set;
         }
 
+        public int Id {
+            get; private set;
+        }
+
         public int Passengers {
             get {
                 return passengers;
@@ -40,14 +45,13 @@ namespace autoTaxi{
         // Constructor
         public Car(Position pos) {
             this.pos = pos;
+            Id = id;
+            id++;
             requests = new List<Request>();
         }
 
-        // Update current location using elapsed time, speed, and routes
-        public void update(int elapsedTime) {
-            double distanceTraveled = elapsedTime * speed;
-
-
+        public override string ToString() {
+            return string.Format("id: {0}, pos: {1:f}, Psngr: {2}", Id, pos, Passengers);
         }
     }
 }

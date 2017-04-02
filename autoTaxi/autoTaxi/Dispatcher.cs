@@ -8,7 +8,7 @@ namespace autoTaxi{
     class Dispatcher{
 
         // Takes a list of cars and a request, and decides which 
-        // car should handle that request. It adds the approprate 
+        // car should handle that request. It adds the appropriate 
         // requests to that car.
         public static bool greedy(List<Car> cars, Request curRequest) {
             double shortestDist = double.PositiveInfinity;
@@ -26,10 +26,9 @@ namespace autoTaxi{
 
             if(bestCarIndex == -1) {
                 return false;
-            }
-            else { 
+            } else { 
                 cars[bestCarIndex].Passengers += curRequest.passengers;
-                cars[bestCarIndex].requests.Insert(0, new Request(new autoTaxi.Position(0, 0), curRequest.start, curRequest.time, 0));
+                cars[bestCarIndex].requests.Insert(0, new Request(new Position(0, 0), curRequest.start, curRequest.time, 0));
                 cars[bestCarIndex].requests.Add(curRequest);
                 greedySort(cars[bestCarIndex].requests);
                 return true;
@@ -59,9 +58,11 @@ namespace autoTaxi{
                         shortestDistIndex = j;
                     } 
                 }
-                Request temp = requests[curPoint + 1];
-                requests[curPoint + 1] = requests[shortestDistIndex];
-                requests[shortestDistIndex] = temp;
+                if(curPoint + 1 != shortestDistIndex) { //swap if they're not the same
+                    Request temp = requests[curPoint + 1];
+                    requests[curPoint + 1] = requests[shortestDistIndex];
+                    requests[shortestDistIndex] = temp;
+                }
             }
         }
     }

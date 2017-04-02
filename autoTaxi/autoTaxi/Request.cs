@@ -101,5 +101,9 @@ namespace autoTaxi {
             this.x = pos.x + x;
             this.y = pos.y + y;
         }
+
+        public override string ToString() {
+            return string.Format("({0:f}, {1:f})", x / 5280 , y / 5280);
+        }
     }
 }
