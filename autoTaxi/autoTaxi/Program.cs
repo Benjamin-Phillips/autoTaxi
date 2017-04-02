@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace autoTaxi {
     class Program {
+        [STAThread]
         static void Main(string[] args) {
+            //greedySimulation();
+            Application.Run(new Form1());
+        }
+
+        private static void greedySimulation() {
             //Area of Logan = 18.5 sq. mi. = 4.3012 mi x 4.3012 mi = 22710.1387 ft * 22710.137 ft
             //Median commute time cache county = 16.8 min. or 7.0 mi. at 25 mph. std. dev. = 4 min. = 1.66667 mi.
             int vehicles = 5;
@@ -16,6 +23,8 @@ namespace autoTaxi {
             double stdDev = 8800; //1.66667 miles in feet
             double gridWidth = 45420.274; //width of the area ~8.6 mi in feet
             //testGenerateRequests(medianDist, stdDev, gridWidth);
+
+            //simulate the greedy algorithm dispatcher & update.
             List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
             List<Car> cars = generateCars(vehicles, gridWidth);
 
@@ -24,36 +33,47 @@ namespace autoTaxi {
                 int elapsedTime = requests[i].time - prevTime;
                 prevTime = requests[i].time;
                 Console.WriteLine("\tRequest {0}/{1}: {2} -> {3}", i + 1, requests.Count, requests[i].start, requests[i].end);
-                Console.ReadKey();
-                Console.Write("\b");
                 Dispatcher.greedy(cars, requests[i]);
                 foreach(Car c in cars) {
                     Console.WriteLine(c + ", dist: {0:f}", Dispatcher.distance(c.pos, requests[i].start) / 5280);
                 }
-                Console.ReadKey();
-                Console.Write("\b");
+                // Console.ReadKey();
+                // Console.Write("\b");
                 update(elapsedTime, cars);
             }
+            Console.WriteLine();
+            finishDeliveries(cars);
+        }
 
-            //determine times between remaining dropoffs
+        public static void finishDeliveries(List<Car> cars) {
+            //determine times of remaining dropoffs
             List<double> times = new List<double>();
             foreach(Car c in cars) {
                 Position pos = c.pos;
-                for(int i = 0; i < c.requests.Count; i++) {
-                    times.Add(Dispatcher.distance(c.requests[i].end, pos) / Car.speed);
+                double eventTime = 0;
+                for(int i = 0; i < c.requests.Count; i++) { //time = distance(a, b) / speed
+                    eventTime += Dispatcher.distance(c.requests[i].end, pos) / Car.speed;
+                    times.Add(eventTime);
                     pos = c.requests[i].end;
                 }
             }
             times.Sort();
-            //finish delivering remaining passengers once all requests are finished.
-            foreach(double t in times) {
-                update((int)t, cars);
-                Console.WriteLine();
+
+            double timePassed = 0;
+            update((int)Math.Ceiling(times[0]), cars); //remove first leg of the last pickup
+            timePassed += times[0];
+            times.RemoveAt(0);
+
+            foreach(double eventTime in times) { //iterate through each remaining drop off
+                Console.WriteLine("dx = {0:f}", ((eventTime - timePassed) * Car.speed) / 5280);
                 foreach(Car c in cars) {
                     if(c.requests.Count > 0) {
-                        Console.WriteLine(c + " next: " + c.requests[0].end);
+                        Console.WriteLine(c + " next: {0:f}", Dispatcher.distance(c.pos, c.requests[0].end) / 5280);
                     }
                 }
+                update((int)Math.Ceiling(eventTime - timePassed), cars);
+                timePassed += eventTime - timePassed;
+                Console.WriteLine();
             }
         }
 

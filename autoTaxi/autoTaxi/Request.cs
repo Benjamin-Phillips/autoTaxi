@@ -57,7 +57,11 @@ namespace autoTaxi {
                 double theta = ((rand.NextDouble() * 360) * Math.PI) / 180; //radians 0 - 6.28
 
                 Position start = new Position((rand.NextDouble() * gridWidth), (rand.NextDouble() * gridWidth)); //random point in 8.6 mi x 8.6 mi area.
-                Position end = new Position(start.x + (distance * Math.Cos(theta)), start.y + (distance * Math.Sin(theta))); //end points can leave grid
+                Position end;
+                do { //force points inside of area.
+                    end = new Position(start.x + (distance * Math.Cos(theta)), start.y + (distance * Math.Sin(theta)));
+                    theta = ((rand.NextDouble() * 360) * Math.PI) / 180; //radians 0 - 6.28
+                } while(end.x < 0 || end.y < 0);
 
                 int deltaTime = rand.Next() % (2 * frequency + 1);
                 requests.Add(new Request(start, end, time + deltaTime));
