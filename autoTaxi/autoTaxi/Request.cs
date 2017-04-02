@@ -48,7 +48,7 @@ namespace autoTaxi {
         /// <param name="medianTripDistance"> distance in feet.</param>
         /// <param name="stdDev"> deviation in feet.</param>
         /// <returns></returns>
-        public static List<Request> generateRequests(int frequency, int simulationTime, double medianTripDistance, double stdDev) {
+        public static List<Request> generateRequests(int frequency, int simulationTime, double medianTripDistance, double stdDev, double gridWidth) {
             List<Request> requests = new List<Request>();
             Random rand = new Random();
             int time = 0;
@@ -56,8 +56,8 @@ namespace autoTaxi {
                 double distance = randomNormal(medianTripDistance, stdDev, rand);
                 double theta = ((rand.NextDouble() * 360) * Math.PI) / 180; //radians 0 - 6.28
 
-                Position start = new Position((rand.NextDouble() * 45420.274), (rand.NextDouble() * 45420.274)); //random point in 8.6 mi x 8.6 mi area.
-                Position end = new Position(start.x + (distance * Math.Cos(theta)), start.y + (distance * Math.Sin(theta)));
+                Position start = new Position((rand.NextDouble() * gridWidth), (rand.NextDouble() * gridWidth)); //random point in 8.6 mi x 8.6 mi area.
+                Position end = new Position(start.x + (distance * Math.Cos(theta)), start.y + (distance * Math.Sin(theta))); //end points can leave grid
 
                 int deltaTime = rand.Next() % (2 * frequency + 1);
                 requests.Add(new Request(start, end, time + deltaTime));
@@ -95,6 +95,11 @@ namespace autoTaxi {
         public Position(double x, double y) {
             this.x = x;
             this.y = y;
+        }
+
+        public Position(Position pos, double x, double y) {
+            this.x = pos.x + x;
+            this.y = pos.y + y;
         }
     }
 }

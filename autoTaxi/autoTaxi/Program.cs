@@ -7,7 +7,25 @@ using System.Threading.Tasks;
 namespace autoTaxi {
     class Program {
         static void Main(string[] args) {
-            testGenerateRequests();
+            //Area of Logan = 18.5 sq. mi. = 4.3012 mi x 4.3012 mi = 22710.1387 ft * 22710.137 ft
+            //Median commute time cache county = 16.8 min. or 7.0 mi. at 25 mph. std. dev. = 4 min. = 1.66667 mi.
+            //
+            int frequency = 5; //5 minutes / request
+            int simTime = 3600; //3600 seconds = 1 hour
+            double medianDist = 36960; //7 miles in feet
+            double stdDev = 8800; //1.66667 miles in feet
+            double gridWidth = 45420.274; //width of the area ~8.6 mi in feet
+            //testGenerateRequests(medianDist, stdDev, gridWidth);
+            List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
+            List<Car> cars = generateCars(10, gridWidth);
+
+            int prevTime = 0;
+            for(int i = 0; i < requests.Count; i++) {
+                int elapsedTime = requests[i].time - prevTime;
+                prevTime = requests[i].time;
+                Dispatcher.greedy(cars, requests[i]);
+                update(elapsedTime, cars);
+            }
         }
 
         private void testGreedySort() {
@@ -33,13 +51,17 @@ namespace autoTaxi {
             }
         }
 
-        private static void testGenerateRequests() {
-            //Area of Logan = 18.5 sq. mi. = 4.3012 mi x 4.3012 mi = 22710.1387 ft * 22710.137 ft
-            //Median commute time cache county = 16.8 min. or 7.0 mi. at 25 mph. std. dev. = 4 min. = 1.66667 mi.
-            //
-            double medianDist = 36960; //7 miles in feet
-            double stdDev = 8800; //1.66667 miles in feet
-            List<Request> requests = Request.generateRequests(5, 3600, medianDist, stdDev);
+        public static List<Car> generateCars(int numCars, double gridWidth) {
+            List<Car> cars = new List<Car>();
+            Random rand = new Random();
+            for(int i = 0; i < numCars; i++) {
+                cars.Add(new Car(new Position(rand.NextDouble() * gridWidth, rand.NextDouble() * gridWidth)));
+            }
+            return cars;
+        }
+
+        private static void testGenerateRequests(double medianDist, double stdDev, double gridWidth) {
+            List<Request> requests = Request.generateRequests(5, 3600, medianDist, stdDev, gridWidth);
 
             foreach(Request r in requests) {
                 double distance = Math.Sqrt(Math.Pow(r.start.x - r.end.x, 2) + Math.Pow(r.start.y - r.end.y, 2));
