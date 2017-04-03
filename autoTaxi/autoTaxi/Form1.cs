@@ -36,9 +36,8 @@ namespace autoTaxi {
                 Program.update(updateFrequency, cars);
                 drawSystem(cars);
             }
-        }
 
-        private static void TimerEventProcessor(Object myObject, EventArgs myEventArgs) {
+            await Task.Delay(delay);
         }
 
         public void drawSystem(List<Car> cars) {
