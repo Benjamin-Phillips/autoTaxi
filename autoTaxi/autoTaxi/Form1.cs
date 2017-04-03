@@ -28,16 +28,18 @@ namespace autoTaxi {
             cars[0].pos = new Position(960 * 24, 540 * 42);
 
             int updateFrequency = 1; //seconds per update
-            for(int time = 0, req = 0; time < simTime * 2; ) {
-                Request r = requests[req];
-                if(time >= r.time) { //time for next request
-                    Pen requestColor = Pens.Red;
-                    drawObject(r.start, r.passengers, CreateGraphics(), requestColor, r, gridWidth);
-                    Dispatcher.greedy(cars, requests[req++]);
+            for(int time = 0, req = 0; time < simTime * 2; time += updateFrequency) {
+                if(req < requests.Count) {
+                    Request r = requests[req];
+                    if (time >= r.time) { //time for next request
+                        Pen requestColor = Pens.Red;
+                        drawObject(r.start, r.passengers, CreateGraphics(), requestColor, r, gridWidth);
+                        Dispatcher.greedy(cars, requests[req++]);
+                    }
                 }
+                
                 Program.update(updateFrequency, cars);
                 drawSystem(cars, gridWidth);
-                time += updateFrequency;
             }
 
             await Task.Delay(delay);
