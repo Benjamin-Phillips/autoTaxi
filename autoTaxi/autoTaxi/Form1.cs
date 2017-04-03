@@ -21,41 +21,50 @@ namespace autoTaxi {
             int simTime = 7200; //3600 seconds = 1 hour
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
-            double gridWidth = 45420.274; //width of the area ~8.6 mi in feet
+            double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
 
             List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
             List<Car> cars = Program.generateCars(vehicles, gridWidth);
             cars[0].pos = new Position(960 * 24, 540 * 42);
 
             int updateFrequency = 1; //seconds per update
-            for(int time = 0, req = 0; time < simTime; time++) {
+            for(int time = 0, req = 0; time < simTime * 2; ) {
                 Request r = requests[req];
-                if(time == r.time) { //time for next request
+                if(time >= r.time) { //time for next request
+                    Pen requestColor = Pens.Red;
+                    drawObject(r.start, r.passengers, CreateGraphics(), requestColor, r, gridWidth);
                     Dispatcher.greedy(cars, requests[req++]);
                 }
                 Program.update(updateFrequency, cars);
-                drawSystem(cars);
+                drawSystem(cars, gridWidth);
+                time += updateFrequency;
             }
         }
 
         private static void TimerEventProcessor(Object myObject, EventArgs myEventArgs) {
         }
 
-        public void drawSystem(List<Car> cars) {
+        public void drawSystem(List<Car> cars, double gridWidth) {
+            Pen[] pen = { Pens.Blue, Pens.Red, Pens.Green, Pens.Indigo, Pens.Gold, Pens.Fuchsia };
+
             Graphics graphics = CreateGraphics();
             foreach(Car c in cars) {
-                if(c.Id == 0) {
-                    drawObject(c.pos, c.Passengers, graphics, Pens.Blue);
-                } else {
-                    drawObject(c.pos, c.Passengers, graphics, Pens.Red);
-                }
+                drawObject(c.pos, c.Passengers, graphics, pen[c.Id], c, gridWidth);
             }
         }
 
-        public void drawObject(Position p, int passengers, Graphics graphics, Pen color) {
+        public void drawObject(Position p, int passengers, Graphics graphics, Pen color, Object item, double gridWidth) {
             Rectangle rectangle = new Rectangle(
-               (int)(p.x / 24), (int)(p.y / 42), 10, 10);
-            graphics.DrawRectangle(color, rectangle);
+                (int)(p.x / (gridWidth/this.Width)), (int)(p.y / (gridWidth/this.Height)), 10, 10);
+           
+            if (item.GetType() == typeof(Car)) {
+                graphics.DrawEllipse(color, rectangle);
+            }
+            else if(item.GetType() == typeof(Request)) {
+                System.Drawing.SolidBrush myBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
+                graphics.FillRectangle(myBrush, rectangle);
+                myBrush.Dispose();
+            }
         }
 
         private void InitializeComponent() {

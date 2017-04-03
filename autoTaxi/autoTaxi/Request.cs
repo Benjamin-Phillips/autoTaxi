@@ -58,10 +58,15 @@ namespace autoTaxi {
 
                 Position start = new Position((rand.NextDouble() * gridWidth), (rand.NextDouble() * gridWidth)); //random point in 8.6 mi x 8.6 mi area.
                 Position end;
+                int count = 0;
                 do { //force points inside of area.
+                    if(count++ > 15) {
+                        distance = .95 * distance;
+                        Console.WriteLine("50 or more failed attempts at setting endpoint of request; Decreasing distance to travel by 5%");
+                    }
                     end = new Position(start.x + (distance * Math.Cos(theta)), start.y + (distance * Math.Sin(theta)));
                     theta = ((rand.NextDouble() * 360) * Math.PI) / 180; //radians 0 - 6.28
-                } while(end.x < 0 || end.y < 0);
+                } while(end.x < 0 || end.y < 0 || end.x > gridWidth || end.y > gridWidth);
 
                 int deltaTime = rand.Next() % (2 * frequency + 1);
                 requests.Add(new Request(start, end, time + deltaTime));
