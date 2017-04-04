@@ -51,7 +51,7 @@ namespace autoTaxi{
         }
 
         public override string ToString() {
-            return string.Format("id: {0}, pos: {1:f}, Stops: {2}", Id, pos, requests.Count);
+            return string.Format("id: {0}, pos: {1:f}, Psng: {2}", Id, pos, Passengers);
         }
     }
 }

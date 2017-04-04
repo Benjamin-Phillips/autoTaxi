@@ -18,26 +18,29 @@ namespace autoTaxi {
         public async void greedyVisualization(int delay) { //delay in ms
             int vehicles = 5;
             int frequency = 5 * 60; //60 seconds / request
-            int simTime = 7200; //3600 seconds = 1 hour
+            int simTime = 2 * 3600; //3600 seconds = 1 hour
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
             double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
 
             List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
             List<Car> cars = Program.generateCars(vehicles, gridWidth);
-            cars[0].pos = new Position(960 * 24, 540 * 42);
 
             int updateFrequency = 3; //seconds per update
-            for(int time = 0, req = 0; time <= requests.Last().time + 2*updateFrequency; time += updateFrequency) {
+            for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
                         Console.WriteLine("Time for request {0}/{1}", req + 1, requests.Count);
                         drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
-                        Dispatcher.greedy(cars, requests[req++]);
+                        drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
+                        if(!Dispatcher.greedy(cars, requests[req++])) {
+                            req--; //If all cars are full don't move to next request
+                        }
                     }
                 }
-                
+                await Task.Delay(delay);
+
                 Program.update(updateFrequency, cars);
                 drawSystem(cars, gridWidth);
             }
@@ -47,9 +50,9 @@ namespace autoTaxi {
                 while(c.Passengers > 0) {
                     Program.update(updateFrequency, cars);
                     drawSystem(cars, gridWidth);
+                    await Task.Delay(delay);
                 }
             }
-                await Task.Delay(delay);
 
         }
 
@@ -64,7 +67,7 @@ namespace autoTaxi {
 
         public void drawObject(Position p, int passengers, Graphics graphics, Color color, object item, double gridWidth) {
             Rectangle rectangle = new Rectangle(
-                (int)(p.x / (gridWidth / Width)), (int)(p.y / (gridWidth / Height)), 8, 8);
+                (int)(p.x / (gridWidth / (Width - 25))), (int)(p.y / (gridWidth / (Height - 50))), 8, 8);
            
             if (item.GetType() == typeof(Car)) {
                 graphics.FillEllipse(new SolidBrush(color), rectangle);
@@ -96,7 +99,11 @@ namespace autoTaxi {
             // 
             this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.Controls.Add(this.button1);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form1";
+            this.ShowIcon = false;
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.Form1_Load_1);
             this.ResumeLayout(false);
 
@@ -107,7 +114,7 @@ namespace autoTaxi {
 
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
-            greedyVisualization(1);
+            greedyVisualization(0);
             Console.WriteLine("All passengers delivered.");
         }
     }
