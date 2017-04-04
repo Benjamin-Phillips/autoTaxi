@@ -27,13 +27,13 @@ namespace autoTaxi {
             List<Car> cars = Program.generateCars(vehicles, gridWidth);
             cars[0].pos = new Position(960 * 24, 540 * 42);
 
-            int updateFrequency = 1; //seconds per update
-            for(int time = 0, req = 0; time < simTime * 2; time += updateFrequency) {
-                if(req < requests.Count) {
+            int updateFrequency = 3; //seconds per update
+            for(int time = 0, req = 0; time <= requests.Last().time + 2*updateFrequency; time += updateFrequency) {
+                if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
-                    if (time >= r.time) { //time for next request
-                        Pen requestColor = Pens.Red;
-                        drawObject(r.start, r.passengers, CreateGraphics(), requestColor, r, gridWidth);
+                    if (time >= r.time) { //if time for next request
+                        Console.WriteLine("Time for request {0}/{1}", req + 1, requests.Count);
+                        drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
                         Dispatcher.greedy(cars, requests[req++]);
                     }
                 }
@@ -41,28 +41,38 @@ namespace autoTaxi {
                 Program.update(updateFrequency, cars);
                 drawSystem(cars, gridWidth);
             }
+            
+            //finish delivering remaining passengers
+            foreach(Car c in cars) {
+                while(c.Passengers > 0) {
+                    Program.update(updateFrequency, cars);
+                    drawSystem(cars, gridWidth);
+                }
+            }
+                await Task.Delay(delay);
 
-            await Task.Delay(delay);
         }
 
         public void drawSystem(List<Car> cars, double gridWidth) {
-            Pen[] pen = { Pens.Blue, Pens.Red, Pens.Green, Pens.Indigo, Pens.Gold, Pens.Fuchsia };
+            Color[] color = { Color.Blue, Color.Red, Color.Green, Color.Indigo, Color.Gold, Color.Fuchsia };
 
             Graphics graphics = CreateGraphics();
             foreach(Car c in cars) {
-                drawObject(c.pos, c.Passengers, graphics, pen[c.Id], c, gridWidth);
+                drawObject(c.pos, c.Passengers, graphics, color[c.Id], c, gridWidth);
             }
         }
 
-        public void drawObject(Position p, int passengers, Graphics graphics, Pen color, Object item, double gridWidth) {
+        public void drawObject(Position p, int passengers, Graphics graphics, Color color, object item, double gridWidth) {
             Rectangle rectangle = new Rectangle(
-                (int)(p.x / (gridWidth/this.Width)), (int)(p.y / (gridWidth/this.Height)), 10, 10);
+                (int)(p.x / (gridWidth / Width)), (int)(p.y / (gridWidth / Height)), 8, 8);
            
             if (item.GetType() == typeof(Car)) {
-                graphics.DrawEllipse(color, rectangle);
+                graphics.FillEllipse(new SolidBrush(color), rectangle);
             }
             else if(item.GetType() == typeof(Request)) {
-                System.Drawing.SolidBrush myBrush = new System.Drawing.SolidBrush(System.Drawing.Color.Red);
+                SolidBrush myBrush = new SolidBrush(color);
+                rectangle.Width = 15;
+                rectangle.Height = 15;
                 graphics.FillRectangle(myBrush, rectangle);
                 myBrush.Dispose();
             }
@@ -98,6 +108,7 @@ namespace autoTaxi {
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
             greedyVisualization(1);
+            Console.WriteLine("All passengers delivered.");
         }
     }
 }
