@@ -9,10 +9,9 @@ namespace autoTaxi {
     class Program {
         [STAThread]
         static void Main(string[] args) {
-            //greedySimulation();
-            double dist = Dispatcher.pathPointDistance(new Position(0, 5), new Position(1, 0), new Position(10, 0));
-            Console.WriteLine(dist);
-            Application.Run(new Form1());
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new MyApplicationContext());
         }
 
         private static void greedySimulation() {

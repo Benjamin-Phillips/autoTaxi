@@ -10,28 +10,22 @@ using System.Windows.Forms;
 namespace autoTaxi {
     class Form1 : Form {
         private Button button1;
+        public List<Request> requests;
+        public List<Car> cars;
+        public Func<List<Car>, Request, bool> Assign;
+        public double gridWidth;
 
         public Form1() {
             InitializeComponent();
         }
 
-        public async Task greedyVisualization(Func<List<Car>, Request, bool> Assign, int delay) { //delay in ms
-            int vehicles = 5;
-            int frequency = 5 * 60; //60 seconds / request
-            int simTime = 2 * 3600; //3600 seconds = 1 hour
-            double medianDist = 36960; //7 miles in feet
-            double stdDev = 8800; //1.66667 miles in feet
-            double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
-
-            List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
-            List<Car> cars = Program.generateCars(vehicles, gridWidth);
-
+        public async Task visualization(int delay) { //delay in ms
             int updateFrequency = 4; //seconds per update
             for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
-                        Console.WriteLine("Time for request {0}/{1}", req + 1, requests.Count);
+                        Console.WriteLine("Request {0}/{1} using {2}", req + 1, requests.Count, Assign == Dispatcher.greedyAssign ? "greedy" : "closestPath");
                         drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
                         drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
                         if(!Assign(cars, requests[req++])) {
@@ -99,7 +93,6 @@ namespace autoTaxi {
             // 
             this.ClientSize = new System.Drawing.Size(1904, 1041);
             this.Controls.Add(this.button1);
-            this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Form1";
             this.ShowIcon = false;
@@ -114,7 +107,7 @@ namespace autoTaxi {
 
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
-            Task.Run(async () => await greedyVisualization(Dispatcher.closestPathAssign, 1));
+            Task.Run(async () => await visualization(1));
         }
     }
 }

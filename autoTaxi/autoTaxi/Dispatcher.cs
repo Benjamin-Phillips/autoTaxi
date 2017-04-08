@@ -66,10 +66,13 @@ namespace autoTaxi{
         }
 
         private static void assignRequest(Car car, Request req, int reqIndex) {
+            if(car.Id == 0) {
+                Console.WriteLine("Insert pickup at {0}", reqIndex);
+            }
             car.Passengers += req.passengers; // Add passengers to the car
             car.requests.Add(req); // Add the dropoff request to the requests list
             car.requests.Insert(reqIndex, new Request(new Position(0, 0), req.start, -1, 0)); //add pickup request
-            greedySort(car.requests);
+            greedySort(car.requests, reqIndex + 1); //index to start sorting out from
         }
 
         // Takes a list of cars and a request, and decides which 
@@ -120,12 +123,12 @@ namespace autoTaxi{
          * immediately. Sorts the rest of the list based on closest distance relative
          * to the current request being considered on each iteration.
          */
-        public static void greedySort(List<Request> requests) {
+        public static void greedySort(List<Request> requests, int startIndex = 0) {
             int shortestDistIndex;
             double shortestDistance;
-            int curPoint = 0;
+            int curPoint = startIndex; //0 or startIndex?
             while (curPoint < requests.Count - 1 && requests[curPoint + 1].passengers == 0) {
-                curPoint++;
+                curPoint++; //find first nonzero passenger request
             }
 
             for (; curPoint < requests.Count - 1; curPoint++) {
