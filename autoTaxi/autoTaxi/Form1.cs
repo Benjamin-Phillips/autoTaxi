@@ -15,7 +15,7 @@ namespace autoTaxi {
             InitializeComponent();
         }
 
-        public async void greedyVisualization(int delay) { //delay in ms
+        public async Task greedyVisualization(Func<List<Car>, Request, bool> Assign, int delay) { //delay in ms
             int vehicles = 5;
             int frequency = 5 * 60; //60 seconds / request
             int simTime = 2 * 3600; //3600 seconds = 1 hour
@@ -26,7 +26,7 @@ namespace autoTaxi {
             List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
             List<Car> cars = Program.generateCars(vehicles, gridWidth);
 
-            int updateFrequency = 3; //seconds per update
+            int updateFrequency = 4; //seconds per update
             for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
@@ -34,7 +34,7 @@ namespace autoTaxi {
                         Console.WriteLine("Time for request {0}/{1}", req + 1, requests.Count);
                         drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
                         drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
-                        if(!Dispatcher.greedy(cars, requests[req++])) {
+                        if(!Assign(cars, requests[req++])) {
                             req--; //If all cars are full don't move to next request
                         }
                     }
@@ -53,7 +53,7 @@ namespace autoTaxi {
                     await Task.Delay(delay);
                 }
             }
-
+            Console.WriteLine("All passengers delivered.");
         }
 
         public void drawSystem(List<Car> cars, double gridWidth) {
@@ -114,8 +114,7 @@ namespace autoTaxi {
 
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
-            greedyVisualization(0);
-            Console.WriteLine("All passengers delivered.");
+            Task.Run(async () => await greedyVisualization(Dispatcher.closestPathAssign, 1));
         }
     }
 }

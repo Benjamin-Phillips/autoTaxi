@@ -10,6 +10,8 @@ namespace autoTaxi {
         [STAThread]
         static void Main(string[] args) {
             //greedySimulation();
+            double dist = Dispatcher.pathPointDistance(new Position(0, 5), new Position(1, 0), new Position(10, 0));
+            Console.WriteLine(dist);
             Application.Run(new Form1());
         }
 
@@ -33,7 +35,7 @@ namespace autoTaxi {
                 int elapsedTime = requests[i].time - prevTime;
                 prevTime = requests[i].time;
                 Console.WriteLine("\tRequest {0}/{1}: {2} -> {3}", i + 1, requests.Count, requests[i].start, requests[i].end);
-                Dispatcher.greedy(cars, requests[i]);
+                Dispatcher.greedyAssign(cars, requests[i]);
                 foreach(Car c in cars) {
                     Console.WriteLine(c + ", dist: {0:f}", Dispatcher.distance(c.pos, requests[i].start) / 5280);
                 }

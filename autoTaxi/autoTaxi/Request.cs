@@ -114,5 +114,25 @@ namespace autoTaxi {
         public override string ToString() {
             return string.Format("({0:f}, {1:f})", x / 5280 , y / 5280);
         }
+
+        public double dotProduct(Position point) {
+            return (x * point.x) + (y * point.y);
+        }
+
+        /// <summary>
+        /// A.distance(B) returns A - B
+        /// </summary>
+        public Position distance(Position point) {
+            return new Position(x - point.x, y - point.y);
+        }
+
+        public Position sum(Position point) {
+            return new Position(x + point.x, y + point.y);
+        }
+
+        public void scalarMultiply(double a) {
+            x *= a;
+            y *= a;
+        }
     }
 }
