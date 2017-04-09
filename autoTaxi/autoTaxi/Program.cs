@@ -40,7 +40,7 @@ namespace autoTaxi {
                 }
                 // Console.ReadKey();
                 // Console.Write("\b");
-                update(elapsedTime, cars);
+                greedyUpdate(elapsedTime, cars);
             }
             Console.WriteLine();
             finishDeliveries(cars);
@@ -78,6 +78,51 @@ namespace autoTaxi {
             }
         }
 
+        static public void greedyUpdate(int elapsedTime, List<Car> cars) {
+            foreach (Car car in cars) {
+                if(car.requests.Count <= 0) {
+                    return;
+                }
+                double travelDistance = Car.speed * elapsedTime;
+                Position curPoint = car.requests[0].needsPickedUp ? car.requests[0].start : car.requests[0].end;
+
+                // move car through dropoff points
+                while (car.requests.Count > 0 && Dispatcher.distance(curPoint, car.pos) < travelDistance) {
+                    travelDistance -= Dispatcher.distance(curPoint, car.pos);
+                    car.pos = curPoint;
+                    if (car.requests[0].needsPickedUp) {
+                        car.requests[0].needsPickedUp = false;
+                    }
+                    else {
+                        car.Passengers -= car.requests[0].passengers;
+                        car.requests.RemoveAt(0);
+                    }
+                    Dispatcher.greedySort(car);
+
+                    // Move current point to next pickup/dropoff
+                    if(car.requests.Count > 0) {
+                        curPoint = car.requests[0].needsPickedUp ? car.requests[0].start : car.requests[0].end;
+                    }
+                }
+
+                // if next point further than remaining travel distance
+                if (travelDistance > 0 && car.requests.Count > 0) {
+                    double deltaX = car.pos.x - curPoint.x;
+                    double deltaY = car.pos.y - curPoint.y;
+                    double angle = Math.Atan((Math.Abs(deltaY) / Math.Abs(deltaX)));
+                    double xDir = 1;
+                    double yDir = 1;
+                    if (deltaX > 0) {
+                        xDir = -1;
+                    }
+                    if (deltaY > 0) {
+                        yDir = -1;
+                    }
+                    car.pos = new Position(car.pos.x + travelDistance * Math.Cos(angle) * xDir, car.pos.y + travelDistance * Math.Sin(angle) * yDir);
+                }
+            }
+        }
+
         static public void update(int elapsedTime, List<Car> cars) {
             foreach(Car car in cars) {
                 double travelDistance = Car.speed * elapsedTime;
@@ -109,10 +154,11 @@ namespace autoTaxi {
         private void testGreedySort() {
             List<Request> reqs = new List<Request>();
             Random rand = new Random();
+            Car car = new Car(new Position(0, 0));
             for (int i = 0; i < 15; i++) {
-                reqs.Add(new Request(new Position(0, 0), new Position(0, rand.Next() % 100), 0));
+                car.requests.Add(new Request(new Position(0, 0), new Position(0, rand.Next() % 100), 0));
             }
-            Dispatcher.greedySort(reqs);
+            Dispatcher.greedySort(car);
 
             for (int i = 0; i < 15; i++) {
                 Console.WriteLine(reqs[i].end.y);

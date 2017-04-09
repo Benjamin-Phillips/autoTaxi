@@ -48,12 +48,12 @@ namespace autoTaxi {
 
             //to show all the forms on start
             //can be included in the previous foreach
-            foreach(var form in forms) {
-                form.Show();
-            }
+            //foreach(var form in forms) {
+            //    form.Show();
+            //}
 
             //to show only the first form on start
-            //forms[0].Show();
+            forms[0].Show();
         }
     }
 }
