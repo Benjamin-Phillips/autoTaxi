@@ -81,14 +81,17 @@ namespace autoTaxi {
         static public void greedyUpdate(int elapsedTime, List<Car> cars) {
             foreach (Car car in cars) {
                 if(car.requests.Count <= 0) {
-                    return;
+                    continue;
                 }
+
                 double travelDistance = Car.speed * elapsedTime;
                 Position curPoint = car.requests[0].needsPickedUp ? car.requests[0].start : car.requests[0].end;
 
                 // move car through dropoff points
                 while (car.requests.Count > 0 && Dispatcher.distance(curPoint, car.pos) < travelDistance) {
                     travelDistance -= Dispatcher.distance(curPoint, car.pos);
+                    car.totalMiles += Dispatcher.distance(curPoint, car.pos);
+
                     car.pos = curPoint;
                     if (car.requests[0].needsPickedUp) {
                         car.requests[0].needsPickedUp = false;
@@ -119,6 +122,7 @@ namespace autoTaxi {
                         yDir = -1;
                     }
                     car.pos = new Position(car.pos.x + travelDistance * Math.Cos(angle) * xDir, car.pos.y + travelDistance * Math.Sin(angle) * yDir);
+                    car.totalMiles += travelDistance;
                 }
             }
         }
