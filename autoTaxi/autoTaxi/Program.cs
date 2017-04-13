@@ -151,6 +151,7 @@ namespace autoTaxi {
                         yDir = -1;
                     }
                     car.pos = new Position(car.pos.x + travelDistance * Math.Cos(angle) * xDir, car.pos.y + travelDistance * Math.Sin(angle) * yDir);
+                    car.totalMiles += travelDistance;
                 }
             }
         }

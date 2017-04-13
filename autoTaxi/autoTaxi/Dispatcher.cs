@@ -151,9 +151,6 @@ namespace autoTaxi{
         }
 
         private static void assignRequest(Car car, Request req, int reqIndex) {
-            if(car.Id == 0) { //test code: remove later
-                Console.WriteLine("Insert pickup at {0}", reqIndex);
-            }
             car.Passengers += req.passengers; // Add passengers to the car
             car.requests.Add(req); // Add the dropoff request to the requests list
             Request mockRequest = new Request(req.end, req.start, -1, 0);

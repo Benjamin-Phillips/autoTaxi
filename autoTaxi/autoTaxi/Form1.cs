@@ -13,6 +13,7 @@ namespace autoTaxi {
         public List<Request> requests;
         public List<Car> cars;
         public Func<List<Car>, Request, bool> Assign;
+        private TextBox textBox1;
         public double gridWidth;
 
         public Form1() {
@@ -25,7 +26,6 @@ namespace autoTaxi {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
-                        Console.WriteLine("Request {0}/{1} using {2}", req + 1, requests.Count, Assign == Dispatcher.greedyAssign ? "greedy" : "closestPath");
                         drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
                         drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
                         if(!Assign(cars, requests[req++])) {
@@ -42,6 +42,7 @@ namespace autoTaxi {
                     Program.update(updateFrequency, cars);
                 }
                 drawSystem(cars, gridWidth);
+                updateDistance(cars);
             }
             
             //finish delivering remaining passengers
@@ -54,10 +55,19 @@ namespace autoTaxi {
                         Program.update(updateFrequency, cars);
                     }
                     drawSystem(cars, gridWidth);
+                    updateDistance(cars);
                     await Task.Delay(delay);
                 }
             }
             Console.WriteLine("All passengers delivered.");
+        }
+
+        public void updateDistance(List<Car> cars) {
+            double distance = 0;
+            foreach(Car c in cars) {
+                distance += c.totalMiles;
+            }
+            textBox1.Text = String.Format("Mi: {0:F}", (distance / 5280));
         }
 
         public void drawSystem(List<Car> cars, double gridWidth) {
@@ -87,6 +97,7 @@ namespace autoTaxi {
 
         private void InitializeComponent() {
             this.button1 = new System.Windows.Forms.Button();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // button1
@@ -99,17 +110,26 @@ namespace autoTaxi {
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // textBox1
+            // 
+            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox1.Location = new System.Drawing.Point(-1, 1021);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(159, 31);
+            this.textBox1.TabIndex = 1;
+            // 
             // Form1
             // 
             this.ClientSize = new System.Drawing.Size(1904, 1041);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.button1);
             this.MinimizeBox = false;
             this.Name = "Form1";
             this.ShowIcon = false;
-            this.Text = "test";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.Form1_Load_1);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
