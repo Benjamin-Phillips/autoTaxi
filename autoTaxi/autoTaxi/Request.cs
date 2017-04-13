@@ -42,6 +42,8 @@ namespace autoTaxi {
                 pickup = value;
             }
         }
+        // True if this request has not been picked up from it's start point, else false
+        public bool needsPickedUp = true;
 
         public Request(Position s, Position e, int t, int p = 1) {
             start = s;

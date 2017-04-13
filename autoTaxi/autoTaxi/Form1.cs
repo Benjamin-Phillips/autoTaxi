@@ -37,14 +37,24 @@ namespace autoTaxi {
                 }
                 await Task.Delay(delay);
 
-                Program.update(updateFrequency, cars);
+                if(Assign == Dispatcher.greedyAssign) {
+                    Program.greedyUpdate(updateFrequency, cars);
+                }
+                else {
+                    Program.update(updateFrequency, cars);
+                }
                 drawSystem(cars, gridWidth);
             }
             
             //finish delivering remaining passengers
             foreach(Car c in cars) {
                 while(c.Passengers > 0) {
-                    Program.update(updateFrequency, cars);
+                    if(Assign == Dispatcher.greedyAssign) {
+                        Program.greedyUpdate(updateFrequency, cars);
+                    }
+                    else {
+                        Program.update(updateFrequency, cars);
+                    }
                     drawSystem(cars, gridWidth);
                     await Task.Delay(delay);
                 }

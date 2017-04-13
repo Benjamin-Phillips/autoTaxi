@@ -53,8 +53,6 @@ namespace autoTaxi{
                 for(int j = i; j < bestCar.requests.Count; j++) {
                     //if(bestCar.requests[j].end != positions[i]) { //TODO: overload me
 
-                    //}
-
                 }
             }
             return false;
@@ -187,18 +185,11 @@ namespace autoTaxi{
                 return false;
             }
             else {
-                cars[bestCarIndex].Passengers += curRequest.passengers; // Add passengers to the car
-                cars[bestCarIndex].requests.Add(curRequest); // Add the request to the requests list
+                Car bestCar = cars[bestCarIndex];
+                bestCar.Passengers += curRequest.passengers; // Add passengers to the car
+                bestCar.requests.Add(curRequest); // Add the request to the requests list
 
-                // Figure out where to insert the pickup mock request
-                for (int i = 0; i < cars[bestCarIndex].requests.Count; i++) {
-                    if (cars[bestCarIndex].requests[i].passengers > 0 ||
-                        distance(cars[bestCarIndex].pos, curRequest.start) < distance(cars[bestCarIndex].pos, cars[bestCarIndex].requests[i].end)) {
-                        cars[bestCarIndex].requests.Insert(i, new Request(new Position(0, 0), curRequest.start, -1, 0));
-                        break;
-                    }
-                }
-                greedySort(cars[bestCarIndex].requests);
+                greedySort(cars[bestCarIndex]);
                 return true;
             }
         }
@@ -208,30 +199,44 @@ namespace autoTaxi{
         }
 
         /* 
-         * Assumes that the first index is taken by the request we are picking up 
-         * immediately. Sorts the rest of the list based on closest distance relative
-         * to the current request being considered on each iteration.
+         * Assumes that the first item is the closest request to the car.
+         * Starts at index one and sort the array based on what's closest 
+         * to the previous item
          */
-        public static void greedySort(List<Request> requests) {
-            int shortestDistIndex;
-            double shortestDistance;
-            int curPoint = 0;
-            while (curPoint < requests.Count - 1 && requests[curPoint + 1].passengers == 0) {
-                curPoint++; //find first nonzero passenger request
+        public static void greedySort(Car car) {
+            // find closest pickup or dropoff to car's current position
+            //shortestDist = distance(bestCar.pos, bestCar.requests[0].needsPickedUp ? bestCar.requests[0].start : bestCar.requests[0].end);
+            double shortestDist = double.PositiveInfinity;
+            int bestIndex = 0;
+            for (int i = 0; i < car.requests.Count; i++) {
+                double tempDist = distance(car.pos, car.requests[i].needsPickedUp ? car.requests[i].start : car.requests[i].end);
+                if (tempDist < shortestDist) {
+                    bestIndex = i;
+                    shortestDist = tempDist;
+                }
             }
+            // Swap first item with closest item to car
+            Request temp = car.requests[0];
+            car.requests[0] = car.requests[bestIndex];
+            car.requests[bestIndex] = temp;
+
+            int shortestDistIndex = 0;
+            int curPoint = 0;
+            List<Request> requests = car.requests;
 
             for (; curPoint < requests.Count - 1; curPoint++) {
-                shortestDistIndex = curPoint + 1;
-                shortestDistance = distance(requests[curPoint].end, requests[shortestDistIndex].end);
+                shortestDist = double.PositiveInfinity;
                 for (int j = curPoint + 1; j < requests.Count; j++) {
-                    double tempDistance = distance(requests[j].end, requests[curPoint].end);
-                    if (tempDistance < shortestDistance) {
-                        shortestDistance = tempDistance;
+                    double tempDistance = distance(requests[curPoint].needsPickedUp ? requests[curPoint].start : requests[curPoint].end,
+                        requests[j].needsPickedUp ? requests[j].start : requests[j].end);
+
+                    if (tempDistance < shortestDist) {
+                        shortestDist = tempDistance;
                         shortestDistIndex = j;
                     }
                 }
                 if (curPoint + 1 != shortestDistIndex) { //swap if they're not the same
-                    Request temp = requests[curPoint + 1];
+                    temp = requests[curPoint + 1];
                     requests[curPoint + 1] = requests[shortestDistIndex];
                     requests[shortestDistIndex] = temp;
                 }

@@ -9,6 +9,7 @@ namespace autoTaxi{
         // Speed of each car in feet per second
         public const double speed = 36.6667; // 36.6667 fps = 25 mph
         public const int capacity = 4;
+        public double totalMiles = 0;
         private int passengers = 0;
         private static int id = 0;
 
@@ -54,6 +55,18 @@ namespace autoTaxi{
             pos = c.pos;
             Id = c.Id;
             requests = new List<Request>();
+        }
+        /// <summary>
+        /// Update the running delivery time average 
+        /// </summary>
+        /// <param name="time"> Time to use to update running average </param>
+        public void updateDeliveryTimeAvg(int time) {
+            if(deliveryTimeAvg == 0) {
+                deliveryTimeAvg = time;
+            }
+            else {
+                deliveryTimeAvg = (time + deliveryTimeAvg) / 2;
+            }
         }
 
         public override string ToString() {
