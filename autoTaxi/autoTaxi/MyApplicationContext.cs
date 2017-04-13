@@ -34,10 +34,15 @@ namespace autoTaxi {
             greedyForm.cars = Program.generateCars(vehicles, gridWidth);
             greedyForm.Assign = Dispatcher.greedyAssign;
             greedyForm.gridWidth = gridWidth;
+            greedyForm.Text = "Greedy Algorithm";
             closestPathForm.requests = greedyForm.requests;
-            closestPathForm.cars = greedyForm.cars;
+            closestPathForm.cars = new List<Car>();
+            foreach(Car c in greedyForm.cars) {
+                closestPathForm.cars.Add(new Car(c));
+            }
             closestPathForm.Assign = Dispatcher.closestPathAssign;
             closestPathForm.gridWidth = gridWidth;
+            closestPathForm.Text = "Closest Path Algorithm";
 
             var forms = new List<Form>() {
                 greedyForm, closestPathForm

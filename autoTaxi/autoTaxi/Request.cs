@@ -10,6 +10,7 @@ namespace autoTaxi {
         /// Percent time allowed over normal travel time to fulfill request. x > 1.
         /// </summary>
         public static double timeBuffer = 1.5;
+        private Request pickup;
         /// <summary>
         /// request start point.
         /// </summary>
@@ -31,6 +32,15 @@ namespace autoTaxi {
 
         public int passengers {
             get; private set;
+        }
+
+        public Request Pickup {
+            get {
+                return pickup;
+            }
+            set {
+                pickup = value;
+            }
         }
 
         public Request(Position s, Position e, int t, int p = 1) {
@@ -133,6 +143,20 @@ namespace autoTaxi {
         public void scalarMultiply(double a) {
             x *= a;
             y *= a;
+        }
+
+        public static bool operator ==(Position a, Position b) {
+            if(a.x == b.x && a.y == b.y) {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool operator !=(Position a, Position b) {
+            if(a.x != b.x || a.y != b.y) {
+                return true;
+            }
+            return false;
         }
     }
 }

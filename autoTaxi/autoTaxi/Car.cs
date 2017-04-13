@@ -50,6 +50,12 @@ namespace autoTaxi{
             requests = new List<Request>();
         }
 
+        public Car(Car c) {
+            pos = c.pos;
+            Id = c.Id;
+            requests = new List<Request>();
+        }
+
         public override string ToString() {
             return string.Format("id: {0}, pos: {1:f}, Psng: {2}", Id, pos, Passengers);
         }

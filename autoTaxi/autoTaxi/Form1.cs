@@ -21,7 +21,9 @@ namespace autoTaxi {
 
         public async Task visualization(int delay) { //delay in ms
             int updateFrequency = 4; //seconds per update
+            Console.WriteLine("requests: " + requests.Count);
             for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
+                Console.WriteLine(time);
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
@@ -96,6 +98,7 @@ namespace autoTaxi {
             this.MinimizeBox = false;
             this.Name = "Form1";
             this.ShowIcon = false;
+            this.Text = "test";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.Form1_Load_1);
             this.ResumeLayout(false);

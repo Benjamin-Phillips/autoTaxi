@@ -51,9 +51,9 @@ namespace autoTaxi{
                 Request temp = bestCar.requests[i];
                 int swapIndex = -1;
                 for(int j = i; j < bestCar.requests.Count; j++) {
-                    if(bestCar.requests[j].end != positions[i]) {
+                    //if(bestCar.requests[j].end != positions[i]) { //TODO: overload me
 
-                    }
+                    //}
 
                 }
             }
@@ -81,7 +81,7 @@ namespace autoTaxi{
             }
         }
 
-        public static double getRouteLength(List<Position> route) {
+        public static double getRouteLength(List<Position> route) { //TODO: finish this?
             return 0;
         }
 
@@ -96,39 +96,39 @@ namespace autoTaxi{
             int bestCarIndex = -1;
 
             foreach(Car c in cars) {
-                double distance; //distance from point to a line-segment
+                double deltaDistance; //distance from point to a line-segment
                 if(c.requests.Count == 0) { //edge case: car has no requests
-                    distance = Dispatcher.distance(c.pos, newReq.start);
-                    setNewBestPath(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, distance, 0);
+                    deltaDistance = Dispatcher.distance(c.pos, newReq.start);
+                    updatePathIfBest(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, deltaDistance, 0);
                 } else if(c.Passengers + newReq.passengers <= Car.capacity) { //if car has capacity for request
                     Position pathStart = c.pos; //start point of first line-segment starts at car
                     foreach(Request r in c.requests) { //find best time to pickup new request for each car
-                        distance = pathPointDistance(newReq.start, pathStart, r.end);
-                        setNewBestPath(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, distance, c.requests.IndexOf(r));
+                        deltaDistance = pathPointDistance(newReq.start, pathStart, r.end);
+                        updatePathIfBest(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, deltaDistance, c.requests.IndexOf(r));
                         pathStart = r.end; //set next line-segment start point
                     } //edge case: most convenient pickup time is after all passengers dropped off
-                    distance = Dispatcher.distance(newReq.start, c.requests.Last().end);
-                    setNewBestPath(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, distance, c.requests.Count);
+                    deltaDistance = Dispatcher.distance(newReq.start, c.requests.Last().end);
+                    updatePathIfBest(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, deltaDistance, c.requests.Count);
                 } else { //edge case: overloaded car, drop passengers off first.
                     int passengers = c.Passengers + newReq.passengers;
-                    for(int pathIndex = 1; pathIndex < c.requests.Count; pathIndex++) {
-                        passengers -= c.requests[pathIndex].passengers; //dropoff x passengers at request i
+                    for(int reqIndex = 0; reqIndex < c.requests.Count - 1; reqIndex++) {
+                        passengers -= c.requests[reqIndex].passengers; //dropoff x passengers at request i
                         if(passengers <= Car.capacity) { //if room at this point in route, find distance
-                            distance = pathPointDistance(newReq.start, c.requests[pathIndex].end, c.requests[pathIndex - 1].end);
+                            deltaDistance = pathPointDistance(newReq.start, c.requests[reqIndex].end, c.requests[reqIndex + 1].end);
+                            updatePathIfBest(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, deltaDistance, reqIndex);
                         }
                     }
                 }
             }
 
-            if(bestCarIndex == -1) { //all cars full, will never happen?
-                return false;
-            } else { //add request to car
-                assignRequest(cars[bestCarIndex], newReq, closestPathIndex);
-                return true;
-            }
+            assignRequest(cars[bestCarIndex], newReq, closestPathIndex);
+            return true;
         }
 
-        private static void setNewBestPath(List<Car> cars, ref double closestPathDist, ref int closestPathIndex, ref int bestCarIndex, Car c, double distance, int index) {
+        /// <summary>
+        /// Updates the shortest distance, and indices of the best car/path
+        /// </summary>
+        private static void updatePathIfBest(List<Car> cars, ref double closestPathDist, ref int closestPathIndex, ref int bestCarIndex, Car c, double distance, int index) {
             if(distance < closestPathDist) {
                 closestPathDist = distance;
                 closestPathIndex = index;
@@ -153,13 +153,15 @@ namespace autoTaxi{
         }
 
         private static void assignRequest(Car car, Request req, int reqIndex) {
-            if(car.Id == 0) {
+            if(car.Id == 0) { //test code: remove later
                 Console.WriteLine("Insert pickup at {0}", reqIndex);
             }
             car.Passengers += req.passengers; // Add passengers to the car
             car.requests.Add(req); // Add the dropoff request to the requests list
-            car.requests.Insert(reqIndex, new Request(new Position(0, 0), req.start, -1, 0)); //add pickup request
-            nearestPathSort(car.requests, reqIndex + 1); //index to start sorting out from
+            Request mockRequest = new Request(req.end, req.start, -1, 0);
+            req.Pickup = mockRequest;
+            car.requests.Insert(reqIndex, mockRequest); //add pickup request
+            nearestPathSort(car.requests, reqIndex);
         }
 
         // Takes a list of cars and a request, and decides which 
@@ -237,7 +239,26 @@ namespace autoTaxi{
         }
 
         public static void nearestPathSort(List<Request> requests, int index) {
+            List<Request> legalChoices = new List<Request>();
+            List<Request> illegalChoices = new List<Request>();
+            findValidChoices(requests, legalChoices, illegalChoices, index + 1);
+            Position curPos = requests[index].end;
+            for(int i = index + 1; i < requests.Count; i++) {
 
+            }
+        }
+
+        private static void findValidChoices(List<Request> requests, List<Request> legalChoices, List<Request> illegalChoices, int index) {
+            for(int i = index; i < requests.Count; i++) { //index of first sortable request
+                if(requests[i].passengers == 0) { //pickup request is legal destination
+                    legalChoices.Add(requests[i]);
+                } else if(requests.Contains(requests[i].Pickup) && //dropoff before pickup is illegal
+                    requests.IndexOf(requests[i].Pickup) >= index) { //when pickup request is sortable
+                    illegalChoices.Add(requests[i]);
+                } else {
+                    legalChoices.Add(requests[i]);
+                }
+            }
         }
     }
 }
