@@ -47,15 +47,16 @@ namespace autoTaxi {
             var forms = new List<Form>() {
                 greedyForm, closestPathForm
             };
+
             foreach(var form in forms) {
                 form.FormClosed += onFormClosed;
             }
 
             //to show all the forms on start
             //can be included in the previous foreach
-            //foreach(var form in forms) {
-            //    form.Show();
-            //}
+            foreach(var form in forms) {
+                form.Show();
+            }
 
             //to show only the first form on start
             forms[0].Show();

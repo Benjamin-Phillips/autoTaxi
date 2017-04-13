@@ -243,22 +243,53 @@ namespace autoTaxi{
             }
         }
 
+        /// <summary>
+        /// greedily sorts requests starting from supplied index + 1 while maintaining that pickups
+        /// come before dropoffs.
+        /// </summary>
         public static void nearestPathSort(List<Request> requests, int index) {
             List<Request> legalChoices = new List<Request>();
             List<Request> illegalChoices = new List<Request>();
             findValidChoices(requests, legalChoices, illegalChoices, index + 1);
             Position curPos = requests[index].end;
-            for(int i = index + 1; i < requests.Count; i++) {
 
+            for(int i = index + 1; i < requests.Count - 1; i++) { //i = swap index
+                double nearestPointDist = double.MaxValue;
+                Request nearestRequest = null;
+
+                foreach(Request r in legalChoices) { //pick best legal choice
+                    double distance = Dispatcher.distance(curPos, r.end);
+                    if(distance < nearestPointDist) {
+                        nearestPointDist = distance;
+                        nearestRequest = r;
+                    } 
+                }
+
+                //swap position of best request with curReq, update curPos & choices
+                Request swap = requests[i];
+                int indexOfBest = requests.IndexOf(nearestRequest);
+                requests[i] = nearestRequest;
+                requests[indexOfBest] = swap;
+                curPos = nearestRequest.end;
+                legalChoices.Remove(nearestRequest);
+
+                //check for new legal choices
+                foreach(Request r in illegalChoices) {
+                    if(nearestRequest.end == r.start) {
+                        legalChoices.Add(r);
+                        illegalChoices.Remove(r);
+                        break;
+                    }
+                }
             }
         }
 
         private static void findValidChoices(List<Request> requests, List<Request> legalChoices, List<Request> illegalChoices, int index) {
-            for(int i = index; i < requests.Count; i++) { //index of first sortable request
+            for(int i = index; i < requests.Count; i++) { //index of first choice to sort
                 if(requests[i].passengers == 0) { //pickup request is legal destination
                     legalChoices.Add(requests[i]);
                 } else if(requests.Contains(requests[i].Pickup) && //dropoff before pickup is illegal
-                    requests.IndexOf(requests[i].Pickup) >= index) { //when pickup request is sortable
+                    requests.IndexOf(requests[i].Pickup) >= index) { //unless pickup comes before
                     illegalChoices.Add(requests[i]);
                 } else {
                     legalChoices.Add(requests[i]);

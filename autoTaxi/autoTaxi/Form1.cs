@@ -21,9 +21,7 @@ namespace autoTaxi {
 
         public async Task visualization(int delay) { //delay in ms
             int updateFrequency = 4; //seconds per update
-            Console.WriteLine("requests: " + requests.Count);
             for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
-                Console.WriteLine(time);
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
