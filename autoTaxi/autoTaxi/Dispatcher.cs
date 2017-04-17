@@ -10,8 +10,8 @@ namespace autoTaxi{
 
         //TODO: CONSIDER HOW TO HANDLE CAPACITY
         public static bool permutationAssign(List<Car> cars, Request newReq) {
-            List<List<Position>> bestPermutations = new List<List<Position>>();
-            List<double> permutationLengths = new List<double>();
+            List<List<Position>> bestPermutations = new List<List<Position>>(); //one per car
+            List<double> permutationLengthDelta = new List<double>(); //one per car
 
             foreach(Car c in cars) { //find best permutation for each car
                 permutations = new List<List<Position>>(); //reset
@@ -22,40 +22,48 @@ namespace autoTaxi{
                 }
                 generatePermutations(new List<Position>(), endpoints, newReq.start, newReq.end);
 
-                double bestPerm = double.MaxValue;
+                double bestPermLength = double.MaxValue;
                 int bestPermIndex = -1; //find index of best perm
                 foreach(List<Position> perm in permutations) {
                     perm.Insert(0, c.pos); //first point in perm is always car.pos
                     double routeLength = getRouteLength(perm);
-                    if(routeLength < bestPerm) { //new best permutation
-                        bestPerm = routeLength;
+                    if(routeLength < bestPermLength) { //new best permutation
+                        bestPermLength = routeLength;
                         bestPermIndex = permutations.IndexOf(perm);
                     }
                 }
                 bestPermutations.Add(permutations[bestPermIndex]); //record perm
-                permutationLengths.Add(bestPerm); //record length
+                List<Position> normalRoute = new List<Position>();
+                foreach(Request r in c.requests) {
+                    normalRoute.Add(r.end);
+                }
+                permutationLengthDelta.Add(bestPermLength - getRouteLength(normalRoute)); //record length
             }
 
-            double bestLength = double.MaxValue;
+            double bestLengthDelta = double.MaxValue;
             int bestCarIndex = -1; //find car w/absolute best permutation
-            foreach(double length in permutationLengths) { 
-                if(length < bestLength) {
-                    bestCarIndex = permutationLengths.IndexOf(length);
+            foreach(double delta in permutationLengthDelta) { 
+                if(delta < bestLengthDelta) {
+                    bestCarIndex = permutationLengthDelta.IndexOf(delta);
                 }
             }
 
-            //change cars route to match the permutation
+            //sort cars route to match the best permutation
             Car bestCar = cars[bestCarIndex];
             List<Position> positions = bestPermutations[bestCarIndex];
+            bestCar.requests.Add(newReq); //add new request
             for(int i = 0; i < bestCar.requests.Count - 1; i++) {
                 Request temp = bestCar.requests[i];
-                int swapIndex = -1;
                 for(int j = i; j < bestCar.requests.Count; j++) {
-                    //if(bestCar.requests[j].end != positions[i]) { //TODO: overload me
-
+                    if(bestCar.requests[j].end == positions[i]) { //request corresponding to next dropoff
+                        temp = bestCar.requests[i]; //swap
+                        bestCar.requests[i] = bestCar.requests[j];
+                        bestCar.requests[j] = temp;
+                        j = bestCar.requests.Count; //short circuit after swap
+                    }
                 }
             }
-            return false;
+            return true; //always succeeds?
         }
 
         /// <summary>
@@ -79,8 +87,12 @@ namespace autoTaxi{
             }
         }
 
-        public static double getRouteLength(List<Position> route) { //TODO: finish this?
-            return 0;
+        public static double getRouteLength(List<Position> route) {
+            double length = 0;
+            for(int i = 0; i < route.Count - 1; i++) {
+                length += distance(route[i], route[i + 1]);
+            }
+            return length;
         }
 
         /// <summary>
@@ -203,6 +215,9 @@ namespace autoTaxi{
         public static void greedySort(Car car) {
             // find closest pickup or dropoff to car's current position
             //shortestDist = distance(bestCar.pos, bestCar.requests[0].needsPickedUp ? bestCar.requests[0].start : bestCar.requests[0].end);
+            if(car.requests.Count <= 1) {
+                return;
+            }
             double shortestDist = double.PositiveInfinity;
             int bestIndex = 0;
             for (int i = 0; i < car.requests.Count; i++) {

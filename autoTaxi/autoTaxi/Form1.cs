@@ -21,7 +21,7 @@ namespace autoTaxi {
         }
 
         public async Task visualization(int delay) { //delay in ms
-            int updateFrequency = 4; //seconds per update
+            int updateFrequency = 5; //seconds per update
             for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
@@ -138,7 +138,7 @@ namespace autoTaxi {
 
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
-            Task.Run(async () => await visualization(1));
+            Task.Run(async () => await visualization(0));
         }
     }
 }

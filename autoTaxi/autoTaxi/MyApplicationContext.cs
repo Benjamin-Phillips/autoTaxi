@@ -21,9 +21,9 @@ namespace autoTaxi {
             //This means that any forms created outside of the ApplicationContext will not prevent the 
             //application close.
 
-            int vehicles = 1;
-            int frequency = 10 * 60; //60 seconds / request
-            int simTime = 1 * 3600; //3600 seconds = 1 hour
+            int vehicles = 5;
+            int frequency = 5 * 60; //x * 60 seconds / request
+            int simTime = 12 * 3600; //3600 seconds = 1 hour
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
             double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
@@ -58,8 +58,6 @@ namespace autoTaxi {
                 form.Show();
             }
 
-            //to show only the first form on start
-            forms[0].Show();
         }
     }
 }
