@@ -10,7 +10,8 @@ namespace autoTaxi {
         /// Percent time allowed over normal travel time to fulfill request. x > 1.
         /// </summary>
         public static double timeBuffer = 1.5;
-        private Request pickup;
+        private Request pickup = null;
+        private Request dropoff = null;
         /// <summary>
         /// request start point.
         /// </summary>
@@ -40,6 +41,15 @@ namespace autoTaxi {
             }
             set {
                 pickup = value;
+            }
+        }
+
+        public Request Dropoff {
+            get {
+                return dropoff;
+            }
+            set {
+                dropoff = value;
             }
         }
         // True if this request has not been picked up from it's start point, else false

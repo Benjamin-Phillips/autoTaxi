@@ -22,8 +22,8 @@ namespace autoTaxi {
             //application close.
 
             int vehicles = 1;
-            int frequency = 30 * 60; //x * 60 seconds / request
-            int simTime = 1 * 3600; //3600 seconds = 1 hour
+            int frequency = 20 * 60; //x * 60 seconds / request
+            int simTime = 2 * 3600; //3600 seconds = 1 hour
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
             double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
@@ -56,7 +56,7 @@ namespace autoTaxi {
             permutationForm.Text = "Permutation Delta Algorithm";
 
             var forms = new List<Form>() {
-                /*greedyForm, closestPathForm,*/ permutationForm
+                greedyForm,/* closestPathForm,*/ permutationForm
             };
 
             foreach(var form in forms) {
