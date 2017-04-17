@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace autoTaxi{
     public class Car{
         // Speed of each car in feet per second
-        public const double speed = 0; //36.6667; // 36.6667 fps = 25 mph
+        public const double speed = 36.6667; // 36.6667 fps = 25 mph
         public const int capacity = 4;
         public double totalMiles = 0;
         private int passengers = 0;

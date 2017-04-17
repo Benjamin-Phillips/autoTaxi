@@ -64,6 +64,7 @@ namespace autoTaxi{
             Car bestCar = cars[bestCarIndex];
             List<Position> positions = bestPermutations[bestCarIndex];
             bestCar.requests.Add(newReq); //add dropoff
+            bestCar.Passengers += newReq.passengers; //add passengers
             bestCar.requests.Add(new Request(newReq.end, newReq.start, newReq.time, 0)); //add pickup
             for(int i = 0; i < bestCar.requests.Count - 1; i++) { //i = 0 is car.pos
                 for(int j = i; j < bestCar.requests.Count; j++) {
