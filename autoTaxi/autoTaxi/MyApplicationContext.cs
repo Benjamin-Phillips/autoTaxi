@@ -21,20 +21,21 @@ namespace autoTaxi {
             //This means that any forms created outside of the ApplicationContext will not prevent the 
             //application close.
 
-            int vehicles = 5;
-            int frequency = 5 * 60; //x * 60 seconds / request
-            int simTime = 12 * 3600; //3600 seconds = 1 hour
+            int vehicles = 1;
+            int frequency = 30 * 60; //x * 60 seconds / request
+            int simTime = 2 * 3600; //3600 seconds = 1 hour
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
             double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
 
             Form1 greedyForm = new Form1();
-            Form1 closestPathForm = new Form1();
             greedyForm.requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
             greedyForm.cars = Program.generateCars(vehicles, gridWidth);
             greedyForm.Assign = Dispatcher.greedyAssign;
             greedyForm.gridWidth = gridWidth;
             greedyForm.Text = "Greedy Algorithm";
+
+            Form1 closestPathForm = new Form1();
             closestPathForm.requests = greedyForm.requests;
             closestPathForm.cars = new List<Car>();
             foreach(Car c in greedyForm.cars) {
@@ -44,8 +45,18 @@ namespace autoTaxi {
             closestPathForm.gridWidth = gridWidth;
             closestPathForm.Text = "Closest Path Algorithm";
 
+            Form1 permutationForm = new Form1();
+            permutationForm.requests = greedyForm.requests;
+            permutationForm.cars = new List<Car>();
+            foreach(Car c in greedyForm.cars) {
+                permutationForm.cars.Add(new Car(c));
+            }
+            permutationForm.Assign = Dispatcher.permutationAssign;
+            permutationForm.gridWidth = gridWidth;
+            permutationForm.Text = "Permutation Delta Algorithm";
+
             var forms = new List<Form>() {
-                greedyForm, closestPathForm
+                /*greedyForm, closestPathForm,*/ permutationForm
             };
 
             foreach(var form in forms) {

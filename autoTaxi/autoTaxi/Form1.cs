@@ -21,7 +21,7 @@ namespace autoTaxi {
         }
 
         public async Task visualization(int delay) { //delay in ms
-            int updateFrequency = 5; //seconds per update
+            int updateFrequency = 1; //seconds per update
             for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
@@ -62,6 +62,9 @@ namespace autoTaxi {
             Console.WriteLine("All passengers delivered.");
         }
 
+        /// <summary>
+        /// Adjust total milage driven box
+        /// </summary>
         public void updateDistance(List<Car> cars) {
             double distance = 0;
             foreach(Car c in cars) {

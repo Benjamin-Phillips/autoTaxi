@@ -16,16 +16,22 @@ namespace autoTaxi{
             foreach(Car c in cars) { //find best permutation for each car
                 permutations = new List<List<Position>>(); //reset
                 List<Position> endpoints = new List<Position>();
-                endpoints.Add(newReq.start); //must be in endpoints to work
+                endpoints.Add(newReq.start);
                 foreach(Request r in c.requests) {
                     endpoints.Add(r.end); //init endpoints
                 }
-                generatePermutations(new List<Position>(), endpoints, newReq.start, newReq.end);
-
-                double bestPermLength = double.MaxValue;
-                int bestPermIndex = -1; //find index of best perm
+                List<Position> tmp = new List<Position>();
+                tmp.Add(c.pos); //cars position must be in the permutation at point zero.
+                generateLegalPermutations(tmp, endpoints, newReq.start, newReq.end); //stored in permutations var
                 foreach(List<Position> perm in permutations) {
-                    perm.Insert(0, c.pos); //first point in perm is always car.pos
+                    foreach(Position p in perm) {
+                        Console.Write(p + " ");
+                    }
+                    Console.WriteLine();
+                }
+                double bestPermLength = double.MaxValue;
+                int bestPermIndex = -1; //find index of shortest perm
+                foreach(List<Position> perm in permutations) {
                     double routeLength = getRouteLength(perm);
                     if(routeLength < bestPermLength) { //new best permutation
                         bestPermLength = routeLength;
@@ -34,14 +40,20 @@ namespace autoTaxi{
                 }
                 bestPermutations.Add(permutations[bestPermIndex]); //record perm
                 List<Position> normalRoute = new List<Position>();
+                normalRoute.Add(c.pos); //route must include car start point
                 foreach(Request r in c.requests) {
                     normalRoute.Add(r.end);
                 }
                 permutationLengthDelta.Add(bestPermLength - getRouteLength(normalRoute)); //record length
+                Console.Write("normal({0}): ", getRouteLength(normalRoute));
+                foreach(Position p in normalRoute) { Console.Write(p + " "); }
+                Console.Write("\nnew({0}): ", bestPermLength);
+                foreach(Position p in permutations[bestPermIndex]) { Console.Write(p + " "); }
+                Console.WriteLine("\n");
             }
 
             double bestLengthDelta = double.MaxValue;
-            int bestCarIndex = -1; //find car w/absolute best permutation
+            int bestCarIndex = -1; //find car w/best permutation delta
             foreach(double delta in permutationLengthDelta) { 
                 if(delta < bestLengthDelta) {
                     bestCarIndex = permutationLengthDelta.IndexOf(delta);
@@ -51,7 +63,8 @@ namespace autoTaxi{
             //sort cars route to match the best permutation
             Car bestCar = cars[bestCarIndex];
             List<Position> positions = bestPermutations[bestCarIndex];
-            bestCar.requests.Add(newReq); //add new request
+            bestCar.requests.Add(newReq); //add new request dropoff
+            bestCar.requests.Add(new Request(newReq.end, newReq.start, newReq.time, 0)); //add pickup
             for(int i = 0; i < bestCar.requests.Count - 1; i++) {
                 Request temp = bestCar.requests[i];
                 for(int j = i; j < bestCar.requests.Count; j++) {
@@ -69,21 +82,37 @@ namespace autoTaxi{
         /// <summary>
         /// Method assumes pickup is also in the list of endpoints, generates all permutations s.t. dropoff comes after pickup.
         /// </summary>
-        public static void generatePermutations(List<Position> permutation, List<Position> endpoints, Position pickup, Position dropoff) {
-            if(permutation.Count < endpoints.Count + 2) { //create permutation using all points
-                //if pickup is in the permutation and dropoff is not already in the permutation add it
-                if(permutation.Contains(pickup) && !permutation.Contains(dropoff)) {
-                    endpoints.Add(dropoff);
+        public static void generateLegalPermutations(List<Position> permutation, List<Position> endpoints, Position pickup, Position dropoff) {
+            int permutationLength = (endpoints.Count + 1); //+1 to account for car.pos being in the permutation
+            if(!endpoints.Contains(dropoff)) { //+1 when dropoff is not in endpoints
+                permutationLength++; 
+            }
+            if(permutation.Count < permutationLength) { //create permutation using all endpoints + dropoff + car.pos
+                List<Position> newEndpoints = endpoints;
+                //if pickup is in the permutation and dropoff is not already in the endpoints add it to legal endpoints
+                if(permutation.Contains(pickup) && !endpoints.Contains(dropoff)) {
+                    newEndpoints = new List<Position>(endpoints);
+                    newEndpoints.Add(dropoff);
                 }
-                foreach(Position p in endpoints) { //create legal permutations recursively
-                    if(!permutation.Contains(p)) {
-                        List<Position> newPerm = new List<Position>(permutation);
+
+                /*
+                foreach(Position pickup in pickups) {
+                    Position dropoff = dropoffs[pickups.indexOf(pickup)] //parallel lists
+                    if(permutation.Contains(pickup) && !permutation.Contains(dropoff)) {
+                        newEndpoints.Add(dropoff);
+                    }
+                }
+                */
+
+                foreach(Position p in newEndpoints) { //create legal permutations recursively
+                    if(!permutation.Contains(p)) { //if not in permutation, add it to a new permutation
+                        List<Position> newPerm = new List<Position>(permutation); 
                         newPerm.Add(p);
-                        generatePermutations(newPerm, endpoints, pickup, dropoff);
+                        generateLegalPermutations(newPerm, newEndpoints, pickup, dropoff);
                     }
                 }
             } else {
-                permutations.Add(permutation); //TODO SUPAH IMPORTANTE, MUST MAINTAIN LEGAL PERMUTATION FOR MULTIPLE PICKUP REQUESTS.
+                permutations.Add(permutation); //TODO MUST MAINTAIN LEGAL PERMUTATION FOR MULTIPLE PICKUPs & LEGAL CAPACITY.
             }
         }
 
