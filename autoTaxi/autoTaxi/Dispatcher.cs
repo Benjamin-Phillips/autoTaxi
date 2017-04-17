@@ -63,19 +63,23 @@ namespace autoTaxi{
             //sort cars route to match the best permutation
             Car bestCar = cars[bestCarIndex];
             List<Position> positions = bestPermutations[bestCarIndex];
-            bestCar.requests.Add(newReq); //add new request dropoff
+            bestCar.requests.Add(newReq); //add dropoff
             bestCar.requests.Add(new Request(newReq.end, newReq.start, newReq.time, 0)); //add pickup
-            for(int i = 0; i < bestCar.requests.Count - 1; i++) {
-                Request temp = bestCar.requests[i];
+            for(int i = 0; i < bestCar.requests.Count - 1; i++) { //i = 0 is car.pos
                 for(int j = i; j < bestCar.requests.Count; j++) {
-                    if(bestCar.requests[j].end == positions[i]) { //request corresponding to next dropoff
-                        temp = bestCar.requests[i]; //swap
+                    if(bestCar.requests[j].end == positions[i + 1]) { //request corresponding to next dropoff
+                        Request temp = bestCar.requests[i];
                         bestCar.requests[i] = bestCar.requests[j];
                         bestCar.requests[j] = temp;
                         j = bestCar.requests.Count; //short circuit after swap
                     }
                 }
             }
+            Console.Write("new route: " + bestCar.pos + " ");
+            foreach(Request r in bestCar.requests) {
+                Console.Write(r.end + " ");
+            }
+            Console.WriteLine("\n");
             return true; //always succeeds?
         }
 

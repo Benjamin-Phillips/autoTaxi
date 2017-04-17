@@ -28,7 +28,7 @@ namespace autoTaxi {
                     if (time >= r.time) { //if time for next request
                         drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
                         drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
-                        if(!Assign(cars, requests[req++])) {
+                        if(!Assign(cars, requests[req++])) { //try to assign the car
                             req--; //If all cars are full don't move to next request
                         }
                     }
