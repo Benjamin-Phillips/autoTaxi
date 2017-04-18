@@ -38,7 +38,6 @@ namespace autoTaxi{
                 }
                 List<Position> tmp = new List<Position>();
                 tmp.Add(c.pos); //cars position must be in the permutation at point zero.
-                Console.WriteLine("Finding permutations for car {0}, RL = {1}", c.Id, c.requests.Count + 2);
                 //generated permutation length = num of requests + car.pos + newreq.start + newreq.end
                 generateLegalPermutations(tmp, endpoints, pickups, dropoffs, c.requests.Count + 3); //stored in permutations var
 
@@ -58,7 +57,6 @@ namespace autoTaxi{
                 foreach(Position p in normalRoute) { Console.Write(p + " "); }
                 Console.WriteLine();
             }
-
             if(bestPermutations.Count == 0) { //TODO temporary measure
                 Console.WriteLine("all cars full");
                 return false;
@@ -66,9 +64,9 @@ namespace autoTaxi{
 
             double bestLengthDelta = double.MaxValue;
             int bestCarIndex = -1; //find car w/best permutation delta
-            foreach(double delta in permutationLengthDelta) { 
-                if(delta < bestLengthDelta) {
-                    bestCarIndex = permutationLengthDelta.IndexOf(delta);
+            for(int i = 0; i < permutationLengthDelta.Count; i++) {
+                if(permutationLengthDelta[i] < bestLengthDelta) {
+                    bestCarIndex = i;
                 }
             }
 
@@ -81,8 +79,8 @@ namespace autoTaxi{
             bestCar.Passengers += newReq.passengers; //add passengers
             bestCar.requests.Add(newReq); //add dropoff
             bestCar.requests.Add(pickup); //add pickup
-            for(int i = 0; i < bestCar.requests.Count - 1; i++) { //i = 0 is car.pos
-                for(int j = i; j < bestCar.requests.Count; j++) {
+            for(int i = 0; i < positions.Count - 1; i++) { //i = 0 is car.pos
+                for(int j = i; j < positions.Count; j++) {
                     if(bestCar.requests[j].end == positions[i + 1]) { //request corresponding to next dropoff
                         Request temp = bestCar.requests[i];
                         bestCar.requests[i] = bestCar.requests[j];
@@ -91,6 +89,7 @@ namespace autoTaxi{
                     }
                 }
             }
+
             Console.Write("new route: " + bestCar.pos + " ");
             foreach(Request r in bestCar.requests) {
                 Console.Write(r.end + " ");
@@ -116,9 +115,6 @@ namespace autoTaxi{
                         break;
                     }
                 }
-                if(endpoints.Count == 0) {
-                    Console.WriteLine("go fuck yourself");
-                }
                 for(int i = 0; i < endpoints.Count; i++) {
                     List<Position> newPerm = new List<Position>(permutation);
                     List<Position> newEndpoints = new List<Position>(endpoints);
@@ -128,7 +124,6 @@ namespace autoTaxi{
                 }
             } else {
                 permutations.Add(permutation); //TODO MUST MAINTAIN LEGAL CAPACITY.
-                Console.WriteLine("{0} permutations", permutations.Count);
             }
         }
 
