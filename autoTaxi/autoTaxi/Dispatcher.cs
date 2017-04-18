@@ -15,6 +15,8 @@ namespace autoTaxi{
 
             foreach(Car c in cars) { //find best permutation for each car
                 if(c.Passengers > 4) { //TODO temporary measure, fix in permutations later
+                    permutationLengthDelta.Add(double.PositiveInfinity);
+                    bestPermutations.Add(new List<Position>());
                     continue;
                 }
                 permutations = new List<List<Position>>(); //reset
@@ -57,7 +59,13 @@ namespace autoTaxi{
                 foreach(Position p in normalRoute) { Console.Write(p + " "); }
                 Console.WriteLine();
             }
-            if(bestPermutations.Count == 0) { //TODO temporary measure
+            bool allCarsFull = true;
+            foreach(double delta in permutationLengthDelta) {
+                if(delta != double.PositiveInfinity) {
+                    allCarsFull = false;
+                }
+            }
+            if(allCarsFull) { //TODO temporary measure
                 Console.WriteLine("all cars full");
                 return false;
             }
