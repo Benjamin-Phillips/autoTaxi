@@ -26,7 +26,6 @@ namespace autoTaxi{
                 pickups.Add(newReq.start);
                 List<Position> dropoffs = new List<Position>();
                 dropoffs.Add(newReq.end); //invalid endpoint until start is added to permutation
-                Console.Write("requests: " + c.requests.Count + ", ");
                 foreach(Request r in c.requests) {
                     normalRoute.Add(r.end); 
                     if(r.passengers == 0 || !c.requests.Contains(r.Pickup)) { //not a dropoff OR dropoff person in car
@@ -37,7 +36,6 @@ namespace autoTaxi{
                         dropoffs.Add(r.Dropoff.end);
                     }
                 }
-                Console.WriteLine("pickups + dropoffs = {0}, perlength = {1}", endpoints.Count + pickups.Count, c.requests.Count + 3);
                 List<Position> tmp = new List<Position>();
                 tmp.Add(c.pos); //cars position must be in the permutation at point zero.
                 Console.WriteLine("Finding permutations for car {0}, RL = {1}", c.Id, c.requests.Count + 2);
@@ -106,31 +104,31 @@ namespace autoTaxi{
         /// </summary>
         public static void generateLegalPermutations(List<Position> permutation, List<Position> endpoints, List<Position> pickups, List<Position> dropoffs, int permLength) {
             if(permutation.Count < permLength) { //extend permutation if it's too short
-                List<Position> newEndpoints = new List<Position>(endpoints);
                 List<Position> newPickups = new List<Position>(pickups); //make list copies to modify
                 List<Position> newDropoffs = new List<Position>(dropoffs);
                 for(int i = 0; i < newPickups.Count; i++) {
                     Position pickup = newPickups[i];
                     Position dropoff = newDropoffs[i]; //parallel lists
-                    if(permutation.Contains(pickup) && !newEndpoints.Contains(dropoff)) {
-                        newEndpoints.Add(dropoff);
+                    if(permutation.Contains(pickup) && !endpoints.Contains(dropoff)) {
+                        endpoints.Add(dropoff);
                         newPickups.RemoveAt(i);
                         newDropoffs.RemoveAt(i);
                         break;
                     }
                 }
-                //if(newEndpoints.Count == 0) {
-                //    Console.WriteLine("error, 0 endpoints");
-                //    Console.WriteLine("pickups: {0}, dropoffs: {1}, len: {2}/{3}", newPickups.Count, newDropoffs.Count, permutation.Count, permLength);
-                //}
-                for(int i = 0; i < newEndpoints.Count; i++) {
+                if(endpoints.Count == 0) {
+                    Console.WriteLine("go fuck yourself");
+                }
+                for(int i = 0; i < endpoints.Count; i++) {
                     List<Position> newPerm = new List<Position>(permutation);
-                    newPerm.Add(newEndpoints[i]);
+                    List<Position> newEndpoints = new List<Position>(endpoints);
+                    newPerm.Add(endpoints[i]);
                     newEndpoints.RemoveAt(i);
                     generateLegalPermutations(newPerm, newEndpoints, newPickups, newDropoffs, permLength);
                 }
             } else {
                 permutations.Add(permutation); //TODO MUST MAINTAIN LEGAL CAPACITY.
+                Console.WriteLine("{0} permutations", permutations.Count);
             }
         }
 
