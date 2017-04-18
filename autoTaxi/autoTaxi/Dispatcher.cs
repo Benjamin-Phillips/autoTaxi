@@ -18,24 +18,30 @@ namespace autoTaxi{
                     continue;
                 }
                 permutations = new List<List<Position>>(); //reset
+                List<Position> normalRoute = new List<Position>();
+                normalRoute.Add(c.pos); //normal route must include car start point
                 List<Position> endpoints = new List<Position>();
-                endpoints.Add(newReq.start);
+                endpoints.Add(newReq.start); //start is a valid endpoint for empty permutation
                 List<Position> pickups = new List<Position>();
                 pickups.Add(newReq.start);
                 List<Position> dropoffs = new List<Position>();
-                dropoffs.Add(newReq.end);
+                dropoffs.Add(newReq.end); //invalid endpoint until start is added to permutation
+                Console.Write("requests: " + c.requests.Count + ", ");
                 foreach(Request r in c.requests) {
-                    if(r.Pickup == null || !c.requests.Contains(r.Pickup)) {
-                        endpoints.Add(r.end); //valid endpoint if r is a pickup or dropoff passenger in car
+                    normalRoute.Add(r.end); 
+                    if(r.passengers == 0 || !c.requests.Contains(r.Pickup)) { //not a dropoff OR dropoff person in car
+                        endpoints.Add(r.end);
                     }
-                    if(r.Dropoff != null) {
-                        Console.WriteLine("found pair");
+                    if(r.passengers == 0) {
                         pickups.Add(r.end);
                         dropoffs.Add(r.Dropoff.end);
                     }
                 }
+                Console.WriteLine("pickups + dropoffs = {0}, perlength = {1}", endpoints.Count + pickups.Count, c.requests.Count + 3);
                 List<Position> tmp = new List<Position>();
                 tmp.Add(c.pos); //cars position must be in the permutation at point zero.
+                Console.WriteLine("Finding permutations for car {0}, RL = {1}", c.Id, c.requests.Count + 2);
+                //generated permutation length = num of requests + car.pos + newreq.start + newreq.end
                 generateLegalPermutations(tmp, endpoints, pickups, dropoffs, c.requests.Count + 3); //stored in permutations var
 
                 double bestPermLength = double.MaxValue;
@@ -48,20 +54,15 @@ namespace autoTaxi{
                     }
                 }
                 bestPermutations.Add(permutations[bestPermIndex]); //record perm
-                List<Position> normalRoute = new List<Position>();
-                normalRoute.Add(c.pos); //route must include car start point
-                foreach(Request r in c.requests) {
-                    normalRoute.Add(r.end);
-                }
+
                 permutationLengthDelta.Add(bestPermLength - getRouteLength(normalRoute)); //record length
                 Console.Write("normal({0}): ", getRouteLength(normalRoute));
                 foreach(Position p in normalRoute) { Console.Write(p + " "); }
-                Console.Write("\nnew({0}): ", bestPermLength);
-                foreach(Position p in permutations[bestPermIndex]) { Console.Write(p + " "); }
                 Console.WriteLine();
             }
 
             if(bestPermutations.Count == 0) { //TODO temporary measure
+                Console.WriteLine("all cars full");
                 return false;
             }
 
@@ -106,24 +107,30 @@ namespace autoTaxi{
         public static void generateLegalPermutations(List<Position> permutation, List<Position> endpoints, List<Position> pickups, List<Position> dropoffs, int permLength) {
             if(permutation.Count < permLength) { //extend permutation if it's too short
                 List<Position> newEndpoints = new List<Position>(endpoints);
-
-                foreach(Position pickup in pickups) {
-                    Position dropoff = dropoffs[pickups.IndexOf(pickup)]; //parallel lists
+                List<Position> newPickups = new List<Position>(pickups); //make list copies to modify
+                List<Position> newDropoffs = new List<Position>(dropoffs);
+                for(int i = 0; i < newPickups.Count; i++) {
+                    Position pickup = newPickups[i];
+                    Position dropoff = newDropoffs[i]; //parallel lists
                     if(permutation.Contains(pickup) && !newEndpoints.Contains(dropoff)) {
                         newEndpoints.Add(dropoff);
+                        newPickups.RemoveAt(i);
+                        newDropoffs.RemoveAt(i);
+                        break;
                     }
                 }
-
-                foreach(Position p in newEndpoints) { //create legal permutations recursively
-                    if(!permutation.Contains(p)) { //if not in permutation, add it to a new permutation
-                        List<Position> newPerm = new List<Position>(permutation); 
-                        newPerm.Add(p);
-                        generateLegalPermutations(newPerm, newEndpoints, pickups, dropoffs, permLength);
-                    }
+                //if(newEndpoints.Count == 0) {
+                //    Console.WriteLine("error, 0 endpoints");
+                //    Console.WriteLine("pickups: {0}, dropoffs: {1}, len: {2}/{3}", newPickups.Count, newDropoffs.Count, permutation.Count, permLength);
+                //}
+                for(int i = 0; i < newEndpoints.Count; i++) {
+                    List<Position> newPerm = new List<Position>(permutation);
+                    newPerm.Add(newEndpoints[i]);
+                    newEndpoints.RemoveAt(i);
+                    generateLegalPermutations(newPerm, newEndpoints, newPickups, newDropoffs, permLength);
                 }
-
             } else {
-                permutations.Add(permutation); //TODO MUST MAINTAIN LEGAL PERMUTATION FOR MULTIPLE PICKUPs & LEGAL CAPACITY.
+                permutations.Add(permutation); //TODO MUST MAINTAIN LEGAL CAPACITY.
             }
         }
 
@@ -244,7 +251,9 @@ namespace autoTaxi{
         }
 
         public static double distance(Position start, Position end) {
-            return Math.Sqrt(Math.Pow((start.x - end.x), 2.0) + Math.Pow((start.y - end.y), 2.0));
+            double xDelta = start.x - end.x;
+            double yDelta = start.y - end.y;
+            return Math.Sqrt((xDelta * xDelta) + (yDelta * yDelta));
         }
 
         /* 

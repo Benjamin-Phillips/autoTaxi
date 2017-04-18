@@ -21,8 +21,8 @@ namespace autoTaxi {
             //This means that any forms created outside of the ApplicationContext will not prevent the 
             //application close.
 
-            int vehicles = 1;
-            int frequency = 20 * 60; //x * 60 seconds / request
+            int vehicles = 3;
+            int frequency = 5 * 60; //x * 60 seconds / request
             int simTime = 2 * 3600; //3600 seconds = 1 hour
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
