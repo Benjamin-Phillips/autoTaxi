@@ -56,7 +56,7 @@ namespace autoTaxi {
             permutationForm.Text = "Permutation Delta Algorithm";
 
             var forms = new List<Form>() {
-                greedyForm,/* closestPathForm,*/ permutationForm
+                greedyForm, closestPathForm, /*permutationForm*/
             };
 
             foreach(var form in forms) {

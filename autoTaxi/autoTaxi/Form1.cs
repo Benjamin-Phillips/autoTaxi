@@ -21,8 +21,9 @@ namespace autoTaxi {
         }
 
         public async Task visualization(int delay) { //delay in ms
-            int updateFrequency = 1; //seconds per update
-            for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
+            int updateFrequency = 10; //seconds per update
+            int time = 0;
+            for(int req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
@@ -36,10 +37,10 @@ namespace autoTaxi {
                 await Task.Delay(delay);
 
                 if(Assign == Dispatcher.greedyAssign) {
-                    Program.greedyUpdate(updateFrequency, cars);
+                    Program.greedyUpdate(updateFrequency, cars, time);
                 }
                 else {
-                    Program.update(updateFrequency, cars);
+                    Program.update(updateFrequency, cars, time);
                 }
                 drawSystem(cars, gridWidth);
                 updateDistance(cars);
@@ -49,17 +50,26 @@ namespace autoTaxi {
             foreach(Car c in cars) {
                 while(c.Passengers > 0) {
                     if(Assign == Dispatcher.greedyAssign) {
-                        Program.greedyUpdate(updateFrequency, cars);
+                        Program.greedyUpdate(updateFrequency, cars, time);
                     }
                     else {
-                        Program.update(updateFrequency, cars);
+                        Program.update(updateFrequency, cars, time);
                     }
                     drawSystem(cars, gridWidth);
                     updateDistance(cars);
+                    time += updateFrequency;
                     await Task.Delay(delay);
                 }
             }
             Console.WriteLine("All passengers delivered.");
+
+            int i = 0;
+            foreach(Car c in cars) {
+                Console.WriteLine("Car {0} passenger stats", i++);
+                foreach (DeliveredPassenger d in c.delivered) {
+                    Console.WriteLine("\tPassenger delta time: {0}\t{1}", d.totalRideTime, d.idealRideTime);
+                }
+            }
         }
 
         /// <summary>
