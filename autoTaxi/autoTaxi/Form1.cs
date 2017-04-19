@@ -66,9 +66,14 @@ namespace autoTaxi {
             int i = 0;
             foreach(Car c in cars) {
                 Console.WriteLine("Car {0} passenger stats", i++);
+                Console.WriteLine("\ttotal time\tideal time\tdelta time");
+                int sum = 0;
                 foreach (DeliveredPassenger d in c.delivered) {
-                    Console.WriteLine("\tPassenger delta time: {0}\t{1}", d.totalRideTime, d.idealRideTime);
+                    Console.WriteLine("\t{0, -10}\t{1, -10}\t{2, -10}", d.totalRideTime, d.idealRideTime, d.totalRideTime - d.idealRideTime);
+                    sum += d.totalRideTime - d.idealRideTime;
                 }
+                Console.WriteLine("Average delta time (error): {0}", sum / c.delivered.Count);
+                Console.WriteLine();
             }
         }
 
