@@ -50,7 +50,6 @@ namespace autoTaxi {
                     csv.Append(miles[j, i] + "," + times[j, i] + ",");
                 }
                 csv.Append("\r\n");
-                Console.WriteLine();
             }
             File.WriteAllText("data.csv", csv.ToString());
 
