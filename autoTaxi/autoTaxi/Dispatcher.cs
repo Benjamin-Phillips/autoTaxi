@@ -14,7 +14,7 @@ namespace autoTaxi{
             List<double> permutationLengthDelta = new List<double>(); //one per car
 
             foreach(Car c in cars) { //find best permutation for each car
-                if(c.Passengers > int.MaxValue) { //TODO temporary measure, fix in permutations later
+                if(c.Passengers > 4) { //TODO temporary measure, fix in permutations later
                     permutationLengthDelta.Add(double.PositiveInfinity);
                     bestPermutations.Add(new List<Position>());
                     continue;
@@ -28,6 +28,7 @@ namespace autoTaxi{
                 pickups.Add(newReq.start);
                 List<Position> dropoffs = new List<Position>();
                 dropoffs.Add(newReq.end); //invalid endpoint until start is added to permutation
+                int effectivePassengers = 0;
                 foreach(Request r in c.requests) {
                     normalRoute.Add(r.end);
                     if(r.passengers == 0 || !c.requests.Contains(r.Pickup)) { //not a dropoff OR dropoff person in car
@@ -37,11 +38,15 @@ namespace autoTaxi{
                         pickups.Add(r.end);
                         dropoffs.Add(r.Dropoff.end);
                     }
+                    if(r.Pickup != null && !c.requests.Contains(r.Pickup)) {
+                        effectivePassengers++;
+                        Console.WriteLine("{0} passengers", effectivePassengers);
+                    }
                 }
                 List<Position> tmp = new List<Position>();
                 tmp.Add(c.pos); //cars position must be in the permutation at point zero.
                 //generated permutation length = num of requests + car.pos + newreq.start + newreq.end
-                generateLegalPermutations(tmp, endpoints, pickups, dropoffs, c.requests.Count + 3); //stored in permutations var
+                generateLegalPermutations(tmp, endpoints, pickups, dropoffs, c.requests.Count + 3, effectivePassengers); //stored in permutations var
 
                 double bestPermLength = double.MaxValue;
                 int bestPermIndex = -1; //find index of shortest perm
@@ -65,7 +70,7 @@ namespace autoTaxi{
                     allCarsFull = false;
                 }
             }
-            if(allCarsFull) { //TODO temporary measure
+            if(allCarsFull) { //TODO temporary measure?
                 Console.WriteLine("all cars full");
                 return false;
             }
@@ -89,9 +94,9 @@ namespace autoTaxi{
             bestCar.requests.Add(pickup); //add pickup
 
             Console.WriteLine("test1");
-            for(int i = 0; i < positions.Count - 2; i++) { //i = 0 is car.pos
-                for(int j = i; j < positions.Count - 1; j++) {
-                    Console.WriteLine("i: {0}, j:{1}, pos:{2}, req:{3}", i, j, positions.Count, bestCar.requests.Count);
+            //TODO commit these changed to termination condition
+            for(int i = 0; i < positions.Count - 1; i++) { //i = 0 is car.pos
+                for(int j = i; j < positions.Count; j++) {
                     if(bestCar.requests[j].end == positions[i + 1]) { //request corresponding to next dropoff
                         Request temp = bestCar.requests[i];
                         bestCar.requests[i] = bestCar.requests[j];
@@ -107,7 +112,7 @@ namespace autoTaxi{
                 Console.Write(r.end + " ");
             }
             Console.WriteLine("\n");
-            return true; //always succeeds?
+            return true;
         }
 
         /// <summary>
@@ -117,28 +122,32 @@ namespace autoTaxi{
             if(permutation.Count < permLength) { //extend permutation if it's too short
                 //List<Position> newPickups = new List<Position>(pickups); //make list copies to modify
                 //List<Position> newDropoffs = new List<Position>(dropoffs);
-                for(int i = 0; i < pickups.Count; i++) {
-                    Position pickup = pickups[i];
-                    Position dropoff = dropoffs[i]; //parallel lists
-                    //if permutation has pickup, but not dropoff, and endpoints don't list dropoff, then add it.
-                    if(permutation.Contains(pickup) && !permutation.Contains(dropoff) && !endpoints.Contains(dropoff)) {
+                for(int i = 0; i < pickups.Count; i++) { //check if a pickup has been added to the permutation
+                    Position pickup = pickups[i]; //parallel lists
+                    Position dropoff = dropoffs[i];
+                    //if permutation has pickup, but not dropoff, and endpoints don't list dropoff, then add new endpoint.
+                    if(permutation.Contains(pickup) && !permutation.Contains(dropoff) && !endpoints.Contains(dropoff)) { //dropoffs are repeated
                         endpoints.Add(dropoff);
                         //newPickups.RemoveAt(i);
                         //newDropoffs.RemoveAt(i);
-                        break;
+                        break; //short circuit, at most one will be found
                     }
                 }
-                for(int i = 0; i < endpoints.Count; i++) {
+                for(int i = 0; i < endpoints.Count; i++) { //recursively add each endpoint
                     List<Position> newPerm = new List<Position>(permutation);
                     List<Position> newEndpoints = new List<Position>(endpoints);
                     int newPassengers = effectivePassengers;
-                    newPerm.Add(endpoints[i]);
-                    newEndpoints.RemoveAt(i);
                     if(pickups.Contains(endpoints[i])) { newPassengers++; } //if pickup, increase passenger count
                     else { newPassengers--; } //else decrease it
-                    if(newPassengers >= 4) { //if pickup && car is full
+
+                    if(newPassengers > 4) { //if pickup but car is too full
                         continue;
                     }
+                    if(newPassengers > effectivePassengers) { //picked up passenger
+
+                    }
+                    newPerm.Add(endpoints[i]);
+                    newEndpoints.RemoveAt(i);
                     generateLegalPermutations(newPerm, newEndpoints, pickups, dropoffs, permLength, newPassengers);
                 }
             } else {
