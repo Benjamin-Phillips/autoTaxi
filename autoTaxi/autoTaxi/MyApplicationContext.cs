@@ -27,36 +27,15 @@ namespace autoTaxi {
             double medianDist = 36960; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
             double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
+            List<Request> requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
+            List<Car> cars = Program.generateCars(vehicles, gridWidth);
 
-            Form1 greedyForm = new Form1();
-            greedyForm.requests = Request.generateRequests(frequency, simTime, medianDist, stdDev, gridWidth);
-            greedyForm.cars = Program.generateCars(vehicles, gridWidth);
-            greedyForm.Assign = Dispatcher.greedyAssign;
-            greedyForm.gridWidth = gridWidth;
-            greedyForm.Text = "Greedy Algorithm";
-
-            Form1 closestPathForm = new Form1();
-            closestPathForm.requests = greedyForm.requests;
-            closestPathForm.cars = new List<Car>();
-            foreach(Car c in greedyForm.cars) {
-                closestPathForm.cars.Add(new Car(c));
-            }
-            closestPathForm.Assign = Dispatcher.closestPathAssign;
-            closestPathForm.gridWidth = gridWidth;
-            closestPathForm.Text = "Closest Path Algorithm";
-
-            Form1 permutationForm = new Form1();
-            permutationForm.requests = greedyForm.requests;
-            permutationForm.cars = new List<Car>();
-            foreach(Car c in greedyForm.cars) {
-                permutationForm.cars.Add(new Car(c));
-            }
-            permutationForm.Assign = Dispatcher.permutationAssign;
-            permutationForm.gridWidth = gridWidth;
-            permutationForm.Text = "Permutation Delta Algorithm";
+            Form1 greedyForm = configureForm(requests, cars, Dispatcher.greedyAssign, gridWidth, "Greedy Algorithm");
+            Form1 closestPathForm = configureForm(requests, cars, Dispatcher.closestPathAssign, gridWidth, "Closest Path Algorithm");
+            Form1 permutationForm = configureForm(requests, cars, Dispatcher.permutationAssign, gridWidth, "Permutation Algorithm");
 
             var forms = new List<Form>() {
-                greedyForm, closestPathForm, /*permutationForm*/
+                greedyForm, closestPathForm, permutationForm
             };
 
             foreach(var form in forms) {
@@ -69,6 +48,21 @@ namespace autoTaxi {
                 form.Show();
             }
 
+        }
+
+        private Form1 configureForm(List<Request> requests, List<Car> cars, Func<List<Car>, Request, bool> dispatcher, double gridWidth, string method) {
+            Form1 newForm = new Form1();
+
+            newForm.requests = requests;
+            newForm.cars = new List<Car>();
+            foreach(Car c in cars) {
+                newForm.cars.Add(new Car(c));
+            }
+            newForm.Assign = dispatcher;
+            newForm.gridWidth = gridWidth;
+            newForm.Text = method;
+
+            return newForm;
         }
     }
 }

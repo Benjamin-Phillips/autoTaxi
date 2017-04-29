@@ -8,13 +8,12 @@ namespace autoTaxi{
     class Dispatcher {
         private static List<List<Position>> permutations;
 
-        //TODO: CONSIDER HOW TO HANDLE CAPACITY
         public static bool permutationAssign(List<Car> cars, Request newReq) {
             List<List<Position>> bestPermutations = new List<List<Position>>(); //one per car
             List<double> permutationLengthDelta = new List<double>(); //one per car
 
             foreach(Car c in cars) { //find best permutation for each car
-                if(c.Passengers > int.MaxValue) { //TODO temporary measure, fix in permutations later
+                if(c.Passengers > 4) { //TODO temporary measure, fix in permutations later
                     permutationLengthDelta.Add(double.PositiveInfinity);
                     bestPermutations.Add(new List<Position>());
                     continue;
