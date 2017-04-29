@@ -54,9 +54,9 @@ namespace autoTaxi{
                 bestPermutations.Add(permutations[bestPermIndex]); //record perm
 
                 permutationLengthDelta.Add(bestPermLength - getRouteLength(normalRoute)); //record length
-                Console.Write("normal({0}): ", getRouteLength(normalRoute));
-                foreach(Position p in normalRoute) { Console.Write(p + " "); }
-                Console.WriteLine();
+                //Console.Write("normal({0}): ", getRouteLength(normalRoute));
+                //foreach(Position p in normalRoute) { Console.Write(p + " "); }
+                //Console.WriteLine();
             }
             bool allCarsFull = true;
             foreach(double delta in permutationLengthDelta) {
@@ -65,7 +65,7 @@ namespace autoTaxi{
                 }
             }
             if(allCarsFull) { //TODO temporary measure
-                Console.WriteLine("all cars full");
+                //Console.WriteLine("all cars full");
                 return false;
             }
 
@@ -87,10 +87,10 @@ namespace autoTaxi{
             bestCar.requests.Add(newReq); //add dropoff
             bestCar.requests.Add(pickup); //add pickup
 
-            Console.WriteLine("test1");
+            //Console.WriteLine("test1");
             for(int i = 0; i < positions.Count - 2; i++) { //i = 0 is car.pos
                 for(int j = i; j < positions.Count - 1; j++) {
-                    Console.WriteLine("i: {0}, j:{1}, pos:{2}, req:{3}", i, j, positions.Count, bestCar.requests.Count);
+                    //Console.WriteLine("i: {0}, j:{1}, pos:{2}, req:{3}", i, j, positions.Count, bestCar.requests.Count);
                     if(bestCar.requests[j].end == positions[i + 1]) { //request corresponding to next dropoff
                         Request temp = bestCar.requests[i];
                         bestCar.requests[i] = bestCar.requests[j];
@@ -99,13 +99,13 @@ namespace autoTaxi{
                     }
                 }
             }
-            Console.WriteLine("test2");
+            //Console.WriteLine("test2");
 
-            Console.Write("new route: " + bestCar.pos + " ");
-            foreach(Request r in bestCar.requests) {
-                Console.Write(r.end + " ");
-            }
-            Console.WriteLine("\n");
+            //Console.Write("new route: " + bestCar.pos + " ");
+            //foreach(Request r in bestCar.requests) {
+            //    Console.Write(r.end + " ");
+            //}
+            //Console.WriteLine("\n");
             return true; //always succeeds?
         }
 

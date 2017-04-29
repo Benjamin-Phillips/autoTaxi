@@ -7,11 +7,18 @@ using System.Threading.Tasks;
 
 namespace autoTaxi {
     class Program {
+        private static MyApplicationContext context;
+
         [STAThread]
         static void Main(string[] args) {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MyApplicationContext());
+            context = new MyApplicationContext();
+            Application.Run(context);
+        }
+
+        public static void exitContext() {
+            context.ExitThread();
         }
 
         //private static void greedySimulation() {

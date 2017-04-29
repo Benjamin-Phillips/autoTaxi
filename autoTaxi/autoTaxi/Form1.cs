@@ -13,8 +13,10 @@ namespace autoTaxi {
         public List<Request> requests;
         public List<Car> cars;
         public Func<List<Car>, Request, bool> Assign;
-        private TextBox textBox1;
+        public TextBox textBox1;
         public double gridWidth;
+
+        public int netOverIdealTime;
 
         public Form1() {
             InitializeComponent();
@@ -67,20 +69,20 @@ namespace autoTaxi {
                     await Task.Delay(delay);
                 }
             }
-            Console.WriteLine("All passengers delivered.");
 
-            int i = 0;
+            //Console.WriteLine("All passengers delivered.");
+            //int i = 0;
             foreach(Car c in cars) {
-                Console.WriteLine("Car {0} passenger stats", i++);
-                Console.WriteLine("\ttotal time\tideal time\tdelta time");
-                int sum = 0;
+                //Console.WriteLine("Car {0} passenger stats", i++);
+                //Console.WriteLine("\ttotal time\tideal time\tdelta time");
                 foreach (DeliveredPassenger d in c.delivered) {
-                    Console.WriteLine("\t{0, -10}\t{1, -10}\t{2, -10}", d.totalRideTime, d.idealRideTime, d.totalRideTime - d.idealRideTime);
-                    sum += d.totalRideTime - d.idealRideTime;
+                    //Console.WriteLine("\t{0, -10}\t{1, -10}\t{2, -10}", d.totalRideTime, d.idealRideTime, d.totalRideTime - d.idealRideTime);
+                    netOverIdealTime += d.totalRideTime - d.idealRideTime;
                 }
-                Console.WriteLine("Average delta time (error): {0}", sum / c.delivered.Count);
-                Console.WriteLine();
+                //Console.WriteLine("Average delta time (error): {0}", sum / c.delivered.Count);
+                //Console.WriteLine();
             }
+
         }
 
         /// <summary>
@@ -144,6 +146,7 @@ namespace autoTaxi {
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(159, 31);
             this.textBox1.TabIndex = 1;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // Form1
             // 
@@ -166,6 +169,10 @@ namespace autoTaxi {
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
             Task.Run(async () => await simulation(0, false));
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e) {
+
         }
     }
 }
