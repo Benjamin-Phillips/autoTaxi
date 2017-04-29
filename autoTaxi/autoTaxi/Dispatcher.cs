@@ -8,7 +8,6 @@ namespace autoTaxi{
     class Dispatcher {
         private static List<List<Position>> permutations;
 
-        //TODO: CONSIDER HOW TO HANDLE CAPACITY
         public static bool permutationAssign(List<Car> cars, Request newReq) {
             List<List<Position>> bestPermutations = new List<List<Position>>(); //one per car
             List<double> permutationLengthDelta = new List<double>(); //one per car
@@ -60,9 +59,9 @@ namespace autoTaxi{
                 bestPermutations.Add(permutations[bestPermIndex]); //record perm
 
                 permutationLengthDelta.Add(bestPermLength - getRouteLength(normalRoute)); //record length
-                Console.Write("normal({0}): ", getRouteLength(normalRoute));
-                foreach(Position p in normalRoute) { Console.Write(p + " "); }
-                Console.WriteLine();
+                //Console.Write("normal({0}): ", getRouteLength(normalRoute));
+                //foreach(Position p in normalRoute) { Console.Write(p + " "); }
+                //Console.WriteLine();
             }
             bool allCarsFull = true;
             foreach(double delta in permutationLengthDelta) {
@@ -70,8 +69,8 @@ namespace autoTaxi{
                     allCarsFull = false;
                 }
             }
-            if(allCarsFull) { //TODO temporary measure?
-                Console.WriteLine("all cars full");
+            if(allCarsFull) { //TODO temporary measure
+                //Console.WriteLine("all cars full");
                 return false;
             }
 
@@ -93,10 +92,11 @@ namespace autoTaxi{
             bestCar.requests.Add(newReq); //add dropoff
             bestCar.requests.Add(pickup); //add pickup
 
-            Console.WriteLine("test1");
-            //TODO commit these changed to termination condition
-            for(int i = 0; i < positions.Count - 1; i++) { //i = 0 is car.pos
-                for(int j = i; j < positions.Count; j++) {
+
+            //Console.WriteLine("test1");
+            for(int i = 0; i < positions.Count - 2; i++) { //i = 0 is car.pos
+                for(int j = i; j < positions.Count - 1; j++) {
+                    //Console.WriteLine("i: {0}, j:{1}, pos:{2}, req:{3}", i, j, positions.Count, bestCar.requests.Count);
                     if(bestCar.requests[j].end == positions[i + 1]) { //request corresponding to next dropoff
                         Request temp = bestCar.requests[i];
                         bestCar.requests[i] = bestCar.requests[j];
@@ -105,13 +105,13 @@ namespace autoTaxi{
                     }
                 }
             }
-            Console.WriteLine("test2");
+            //Console.WriteLine("test2");
 
-            Console.Write("new route: " + bestCar.pos + " ");
-            foreach(Request r in bestCar.requests) {
-                Console.Write(r.end + " ");
-            }
-            Console.WriteLine("\n");
+            //Console.Write("new route: " + bestCar.pos + " ");
+            //foreach(Request r in bestCar.requests) {
+            //    Console.Write(r.end + " ");
+            //}
+            //Console.WriteLine("\n");
             return true;
         }
 

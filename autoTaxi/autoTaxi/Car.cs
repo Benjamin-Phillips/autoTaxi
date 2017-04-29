@@ -11,6 +11,7 @@ namespace autoTaxi{
         public const int capacity = 4;
         public double totalMiles = 0;
         private int passengers = 0;
+        public List<DeliveredPassenger> delivered = new List<DeliveredPassenger>();
         private static int id = 0;
 
         // Running delivery time avg. Update every time you drop off a person.
@@ -71,6 +72,21 @@ namespace autoTaxi{
 
         public override string ToString() {
             return string.Format("id: {0}, pos: {1:f}, Psng: {2}", Id, pos, Passengers);
+        }
+    }
+
+    // Struct to keep track of a delivered passenger's statistics
+    public struct DeliveredPassenger {
+        public Request passenger;
+        public int timeOfDropoff;
+        public int totalRideTime;
+        public int idealRideTime;
+
+        public DeliveredPassenger(Request passenger, int dropOffTime) {
+            this.passenger = passenger;
+            timeOfDropoff = dropOffTime;
+            totalRideTime = dropOffTime - passenger.time;
+            idealRideTime = (int)(Dispatcher.distance(passenger.start, passenger.end)/ Car.speed );
         }
     }
 }

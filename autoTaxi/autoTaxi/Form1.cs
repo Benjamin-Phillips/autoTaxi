@@ -13,21 +13,26 @@ namespace autoTaxi {
         public List<Request> requests;
         public List<Car> cars;
         public Func<List<Car>, Request, bool> Assign;
-        private TextBox textBox1;
+        public TextBox textBox1;
         public double gridWidth;
+
+        public int netOverIdealTime;
 
         public Form1() {
             InitializeComponent();
         }
 
-        public async Task visualization(int delay) { //delay in ms
-            int updateFrequency = 1; //seconds per update
-            for(int time = 0, req = 0; req < requests.Count; time += updateFrequency) {
+        public async Task simulation(int delay, bool draw) { //delay in ms
+            int updateFrequency = 10; //seconds per update
+            int time = 0;
+            for(int req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
-                        drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
-                        drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
+                        if(draw) { 
+                            drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
+                            drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
+                        }
                         if(!Assign(cars, requests[req++])) { //try to assign the car
                             req--; //If all cars are full don't move to next request
                         }
@@ -36,30 +41,48 @@ namespace autoTaxi {
                 await Task.Delay(delay);
 
                 if(Assign == Dispatcher.greedyAssign) {
-                    Program.greedyUpdate(updateFrequency, cars);
+                    Program.greedyUpdate(updateFrequency, cars, time);
                 }
                 else {
-                    Program.update(updateFrequency, cars);
+                    Program.update(updateFrequency, cars, time);
                 }
-                drawSystem(cars, gridWidth);
-                updateDistance(cars);
+                if(draw) {
+                    drawSystem(cars, gridWidth);
+                    updateDistance(cars);
+                }
             }
             
             //finish delivering remaining passengers
             foreach(Car c in cars) {
                 while(c.Passengers > 0) {
                     if(Assign == Dispatcher.greedyAssign) {
-                        Program.greedyUpdate(updateFrequency, cars);
+                        Program.greedyUpdate(updateFrequency, cars, time);
                     }
                     else {
-                        Program.update(updateFrequency, cars);
+                        Program.update(updateFrequency, cars, time);
                     }
-                    drawSystem(cars, gridWidth);
+                    if(draw) {
+                        drawSystem(cars, gridWidth);
+                    }
                     updateDistance(cars);
+                    time += updateFrequency;
                     await Task.Delay(delay);
                 }
             }
-            Console.WriteLine("All passengers delivered.");
+
+            //Console.WriteLine("All passengers delivered.");
+            //int i = 0;
+            foreach(Car c in cars) {
+                //Console.WriteLine("Car {0} passenger stats", i++);
+                //Console.WriteLine("\ttotal time\tideal time\tdelta time");
+                foreach (DeliveredPassenger d in c.delivered) {
+                    //Console.WriteLine("\t{0, -10}\t{1, -10}\t{2, -10}", d.totalRideTime, d.idealRideTime, d.totalRideTime - d.idealRideTime);
+                    netOverIdealTime += d.totalRideTime - d.idealRideTime;
+                }
+                //Console.WriteLine("Average delta time (error): {0}", sum / c.delivered.Count);
+                //Console.WriteLine();
+            }
+
         }
 
         /// <summary>
@@ -105,6 +128,8 @@ namespace autoTaxi {
             // 
             // button1
             // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.Location = new System.Drawing.Point(12, 12);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(1880, 33);
@@ -115,11 +140,13 @@ namespace autoTaxi {
             // 
             // textBox1
             // 
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(-1, 1021);
+            this.textBox1.Location = new System.Drawing.Point(-1, 1012);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(159, 31);
             this.textBox1.TabIndex = 1;
+            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // Form1
             // 
@@ -141,7 +168,11 @@ namespace autoTaxi {
 
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
-            Task.Run(async () => await visualization(0));
+            Task.Run(async () => await simulation(0, false));
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e) {
+
         }
     }
 }
