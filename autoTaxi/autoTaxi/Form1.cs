@@ -20,15 +20,17 @@ namespace autoTaxi {
             InitializeComponent();
         }
 
-        public async Task visualization(int delay) { //delay in ms
+        public async Task simulation(int delay, bool draw) { //delay in ms
             int updateFrequency = 10; //seconds per update
             int time = 0;
             for(int req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
                     Request r = requests[req];
                     if (time >= r.time) { //if time for next request
-                        drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
-                        drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
+                        if(draw) { 
+                            drawObject(r.start, r.passengers, CreateGraphics(), Color.Red, r, gridWidth);
+                            drawObject(r.end, r.passengers, CreateGraphics(), Color.Green, r, gridWidth);
+                        }
                         if(!Assign(cars, requests[req++])) { //try to assign the car
                             req--; //If all cars are full don't move to next request
                         }
@@ -42,8 +44,10 @@ namespace autoTaxi {
                 else {
                     Program.update(updateFrequency, cars, time);
                 }
-                drawSystem(cars, gridWidth);
-                updateDistance(cars);
+                if(draw) {
+                    drawSystem(cars, gridWidth);
+                    updateDistance(cars);
+                }
             }
             
             //finish delivering remaining passengers
@@ -55,7 +59,9 @@ namespace autoTaxi {
                     else {
                         Program.update(updateFrequency, cars, time);
                     }
-                    drawSystem(cars, gridWidth);
+                    if(draw) {
+                        drawSystem(cars, gridWidth);
+                    }
                     updateDistance(cars);
                     time += updateFrequency;
                     await Task.Delay(delay);
@@ -120,6 +126,8 @@ namespace autoTaxi {
             // 
             // button1
             // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.Location = new System.Drawing.Point(12, 12);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(1880, 33);
@@ -130,8 +138,9 @@ namespace autoTaxi {
             // 
             // textBox1
             // 
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(-1, 1021);
+            this.textBox1.Location = new System.Drawing.Point(-1, 1012);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(159, 31);
             this.textBox1.TabIndex = 1;
@@ -156,7 +165,7 @@ namespace autoTaxi {
 
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
-            Task.Run(async () => await visualization(0));
+            Task.Run(async () => await simulation(0, false));
         }
     }
 }
