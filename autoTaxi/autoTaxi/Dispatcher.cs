@@ -6,27 +6,28 @@ using System.Threading.Tasks;
 
 namespace autoTaxi{
     class Dispatcher {
-        private static List<List<Position>> permutations;
+        private static List<Position> shortestRoute;
+        private static double shortestRouteLength = double.MaxValue;
 
         public static bool permutationAssign(List<Car> cars, Request newReq) {
             List<List<Position>> bestPermutations = new List<List<Position>>(); //one per car
             List<double> permutationLengthDelta = new List<double>(); //one per car
 
             foreach(Car c in cars) { //find best permutation for each car
-                if(c.Passengers > 4) { //TODO temporary measure, fix in permutations later
+                if(c.Passengers > 5) {
                     permutationLengthDelta.Add(double.PositiveInfinity);
                     bestPermutations.Add(new List<Position>());
                     continue;
                 }
-                permutations = new List<List<Position>>(); //reset
                 List<Position> normalRoute = new List<Position>();
-                normalRoute.Add(c.pos); //normal route must include car start point
                 List<Position> endpoints = new List<Position>();
-                endpoints.Add(newReq.start); //start is a valid endpoint for empty permutation
                 List<Position> pickups = new List<Position>();
-                pickups.Add(newReq.start);
                 List<Position> dropoffs = new List<Position>();
+                normalRoute.Add(c.pos); //normal route must include car start point
+                endpoints.Add(newReq.start); //start is a valid endpoint for empty permutation
+                pickups.Add(newReq.start);
                 dropoffs.Add(newReq.end); //invalid endpoint until start is added to permutation
+
                 int effectivePassengers = 0;
                 foreach(Request r in c.requests) {
                     normalRoute.Add(r.end);
@@ -39,29 +40,12 @@ namespace autoTaxi{
                     }
                     if(r.Pickup != null && !c.requests.Contains(r.Pickup)) {
                         effectivePassengers++;
-                        Console.WriteLine("{0} passengers", effectivePassengers);
                     }
                 }
-                List<Position> tmp = new List<Position>();
-                tmp.Add(c.pos); //cars position must be in the permutation at point zero.
-                //generated permutation length = num of requests + car.pos + newreq.start + newreq.end
-                generateLegalPermutations(tmp, endpoints, pickups, dropoffs, c.requests.Count + 3, effectivePassengers); //stored in permutations var
-
-                double bestPermLength = double.MaxValue;
-                int bestPermIndex = -1; //find index of shortest perm
-                foreach(List<Position> perm in permutations) {
-                    double routeLength = getRouteLength(perm);
-                    if(routeLength < bestPermLength) { //new best permutation
-                        bestPermLength = routeLength;
-                        bestPermIndex = permutations.IndexOf(perm);
-                    }
-                }
-                bestPermutations.Add(permutations[bestPermIndex]); //record perm
-
-                permutationLengthDelta.Add(bestPermLength - getRouteLength(normalRoute)); //record length
-                //Console.Write("normal({0}): ", getRouteLength(normalRoute));
-                //foreach(Position p in normalRoute) { Console.Write(p + " "); }
-                //Console.WriteLine();
+                findShortestPermutation(new List<Position>() { c.pos }, endpoints, pickups, dropoffs, c.requests.Count + 3, effectivePassengers); //stored in shortestRoute var
+                bestPermutations.Add(shortestRoute); //record perm
+                permutationLengthDelta.Add(shortestRouteLength - getRouteLength(normalRoute)); //record length
+                shortestRouteLength = double.MaxValue;
             }
             bool allCarsFull = true;
             foreach(double delta in permutationLengthDelta) {
@@ -70,7 +54,6 @@ namespace autoTaxi{
                 }
             }
             if(allCarsFull) { //TODO temporary measure
-                //Console.WriteLine("all cars full");
                 return false;
             }
 
@@ -92,11 +75,8 @@ namespace autoTaxi{
             bestCar.requests.Add(newReq); //add dropoff
             bestCar.requests.Add(pickup); //add pickup
 
-
-            //Console.WriteLine("test1");
-            for(int i = 0; i < positions.Count - 2; i++) { //i = 0 is car.pos
-                for(int j = i; j < positions.Count - 1; j++) {
-                    //Console.WriteLine("i: {0}, j:{1}, pos:{2}, req:{3}", i, j, positions.Count, bestCar.requests.Count);
+            for(int i = 0; i < positions.Count - 1; i++) { //i = 0 is car.pos
+                for(int j = i; j < positions.Count; j++) {
                     if(bestCar.requests[j].end == positions[i + 1]) { //request corresponding to next dropoff
                         Request temp = bestCar.requests[i];
                         bestCar.requests[i] = bestCar.requests[j];
@@ -105,39 +85,34 @@ namespace autoTaxi{
                     }
                 }
             }
-            //Console.WriteLine("test2");
-
-            //Console.Write("new route: " + bestCar.pos + " ");
-            //foreach(Request r in bestCar.requests) {
-            //    Console.Write(r.end + " ");
-            //}
-            //Console.WriteLine("\n");
             return true;
         }
 
         /// <summary>
         /// Method assumes pickup is also in the list of endpoints, generates all permutations s.t. dropoff comes after pickup.
         /// </summary>
-        public static void generateLegalPermutations(List<Position> permutation, List<Position> endpoints, List<Position> pickups, List<Position> dropoffs, int permLength, int effectivePassengers = 0) {
+        public static void findShortestPermutation(List<Position> permutation, List<Position> endpoints, List<Position> pickups, List<Position> dropoffs, int permLength, 
+            int effectivePassengers = 0, double routeLength = 0) {
             if(permutation.Count < permLength) { //extend permutation if it's too short
-                //List<Position> newPickups = new List<Position>(pickups); //make list copies to modify
-                //List<Position> newDropoffs = new List<Position>(dropoffs);
                 for(int i = 0; i < pickups.Count; i++) { //check if a pickup has been added to the permutation
                     Position pickup = pickups[i]; //parallel lists
                     Position dropoff = dropoffs[i];
                     //if permutation has pickup, but not dropoff, and endpoints don't list dropoff, then add new endpoint.
                     if(permutation.Contains(pickup) && !permutation.Contains(dropoff) && !endpoints.Contains(dropoff)) { //dropoffs are repeated
                         endpoints.Add(dropoff);
-                        //newPickups.RemoveAt(i);
-                        //newDropoffs.RemoveAt(i);
                         break; //short circuit, at most one will be found
                     }
                 }
                 for(int i = 0; i < endpoints.Count; i++) { //recursively add each endpoint
+                    double newLength = routeLength + distance(endpoints[i], permutation.Last());
+                    if(newLength > shortestRouteLength) { //short circuit for clearly bad routes
+                        continue;
+                    }
                     List<Position> newPerm = new List<Position>(permutation);
                     List<Position> newEndpoints = new List<Position>(endpoints);
+
                     int newPassengers = effectivePassengers;
-                    if(pickups.Contains(endpoints[i])) { newPassengers++; } //if pickup, increase passenger count
+                    if(pickups.Contains(endpoints[i])) { newPassengers++; } //if pickup point, increase passenger count
                     else { newPassengers--; } //else decrease it
 
                     if(newPassengers > 4) { //if pickup but car is too full
@@ -148,10 +123,14 @@ namespace autoTaxi{
                     }
                     newPerm.Add(endpoints[i]);
                     newEndpoints.RemoveAt(i);
-                    generateLegalPermutations(newPerm, newEndpoints, pickups, dropoffs, permLength, newPassengers);
+                    
+                    findShortestPermutation(newPerm, newEndpoints, pickups, dropoffs, permLength, newPassengers, newLength);
                 }
             } else {
-                permutations.Add(permutation); //TODO MUST MAINTAIN LEGAL CAPACITY.
+                if(routeLength < shortestRouteLength) {
+                    shortestRoute = permutation;
+                    shortestRouteLength = routeLength;
+                }
             }
         }
 
@@ -188,6 +167,9 @@ namespace autoTaxi{
                     deltaDistance = Dispatcher.distance(newReq.start, c.requests.Last().end);
                     updatePathIfBest(cars, ref closestPathDist, ref closestPathIndex, ref bestCarIndex, c, deltaDistance, c.requests.Count);
                 } else { //edge case: overloaded car, drop passengers off first.
+                    if(c.Passengers > 10) {
+                        continue;
+                    }
                     int passengers = c.Passengers + newReq.passengers;
                     for(int reqIndex = 0; reqIndex < c.requests.Count - 1; reqIndex++) {
                         passengers -= c.requests[reqIndex].passengers; //dropoff x passengers at request i
@@ -197,6 +179,9 @@ namespace autoTaxi{
                         }
                     }
                 }
+            }
+            if(closestPathIndex == -1) {
+                return false;
             }
 
             assignRequest(cars[bestCarIndex], newReq, closestPathIndex);

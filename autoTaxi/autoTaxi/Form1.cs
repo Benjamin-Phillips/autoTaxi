@@ -23,7 +23,7 @@ namespace autoTaxi {
         }
 
         public async Task simulation(int delay, bool draw) { //delay in ms
-            int updateFrequency = 10; //seconds per update
+            int updateFrequency = 1; //seconds per update
             int time = 0;
             for(int req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process
@@ -48,10 +48,20 @@ namespace autoTaxi {
                 }
                 if(draw) {
                     drawSystem(cars, gridWidth);
-                    updateDistance(cars);
                 }
+                    updateDistance(cars);
             }
-            
+
+            int passengers = 0;
+            int max = 0;
+            foreach(Car c in cars) {
+                if(c.Passengers > max) {
+                    max = c.Passengers;
+                }
+                passengers += c.Passengers;
+            }
+            Console.Write("avg: " + (double)passengers / cars.Count + ", max: " + max + ", ");
+
             //finish delivering remaining passengers
             foreach(Car c in cars) {
                 while(c.Passengers > 0) {
@@ -72,9 +82,11 @@ namespace autoTaxi {
 
             //Console.WriteLine("All passengers delivered.");
             //int i = 0;
+            int totalDelivered = 0;
             foreach(Car c in cars) {
                 //Console.WriteLine("Car {0} passenger stats", i++);
                 //Console.WriteLine("\ttotal time\tideal time\tdelta time");
+                totalDelivered += c.delivered.Count;
                 foreach (DeliveredPassenger d in c.delivered) {
                     //Console.WriteLine("\t{0, -10}\t{1, -10}\t{2, -10}", d.totalRideTime, d.idealRideTime, d.totalRideTime - d.idealRideTime);
                     netOverIdealTime += d.totalRideTime - d.idealRideTime;
@@ -82,6 +94,8 @@ namespace autoTaxi {
                 //Console.WriteLine("Average delta time (error): {0}", sum / c.delivered.Count);
                 //Console.WriteLine();
             }
+            netOverIdealTime /= 60; //convert to minutes
+            netOverIdealTime /= totalDelivered;
 
         }
 
@@ -101,7 +115,7 @@ namespace autoTaxi {
 
             Graphics graphics = CreateGraphics();
             foreach(Car c in cars) {
-                drawObject(c.pos, c.Passengers, graphics, color[c.Id], c, gridWidth);
+                drawObject(c.pos, c.Passengers, graphics, color[c.Id % color.Length], c, gridWidth);
             }
         }
 
