@@ -23,7 +23,7 @@ namespace autoTaxi {
         }
 
         public async Task simulation(int delay, bool draw) { //delay in ms
-            int updateFrequency = 1; //seconds per update
+            int updateFrequency = 5; //seconds per update
             int time = 0;
             for(int req = 0; req < requests.Count; time += updateFrequency) {
                 if(req < requests.Count) { //if more requests to process

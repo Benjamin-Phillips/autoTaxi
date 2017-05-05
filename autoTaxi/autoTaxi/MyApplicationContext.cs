@@ -24,7 +24,7 @@ namespace autoTaxi {
             //application close.
 
             int vehicles = 15;
-            int frequency = (int)(60 * 2); //x * 60 seconds / request
+            int frequency = (int)(30); //x * 60 seconds / request
             int simTime = 1 * 3600; //3600 seconds = 1 hour
             double medianDist = 3 * 5280; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
@@ -77,7 +77,7 @@ namespace autoTaxi {
                 //miles = miles.Remove(0, 4);
                 //data.Add(double.Parse(miles));
                 //data.Add(((Form1)form).netOverIdealTime);
-                Task.Run(async () => await ((Form1)form).simulation(0, false));
+                //Task.Run(async () => await ((Form1)form).simulation(0, false));
                 form.Show();
             }
 
