@@ -182,7 +182,7 @@ namespace autoTaxi {
 
         private void button1_Click(object sender, EventArgs e) {
             button1.Visible = false;
-            Task.Run(async () => await simulation(0, false));
+            Task.Run(async () => await simulation(0, true));
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e) {

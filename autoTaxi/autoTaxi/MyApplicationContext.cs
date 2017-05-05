@@ -23,13 +23,13 @@ namespace autoTaxi {
             //This means that any forms created outside of the ApplicationContext will not prevent the 
             //application close.
 
-            int vehicles = 10;
-            int frequency = (int)(2.2 * 60); //x * 60 seconds / request
-            int simTime = 5 * 3600; //3600 seconds = 1 hour
-            double medianDist = 5 * 5280; //7 miles in feet
+            int vehicles = 15;
+            int frequency = (int)(60 * 2); //x * 60 seconds / request
+            int simTime = 1 * 3600; //3600 seconds = 1 hour
+            double medianDist = 3 * 5280; //7 miles in feet
             double stdDev = 8800; //1.66667 miles in feet
-            double gridWidth = 2 * (medianDist + stdDev * 3); //width of the area
-            int numTest = 10;
+            double gridWidth = 5280 * 14; //width of the area
+            int numTest = 1;
 
             double[,] miles = new double[3, numTest];
             double[,] times = new double[3, numTest];
@@ -52,6 +52,7 @@ namespace autoTaxi {
                 csv.Append("\r\n");
             }
             File.WriteAllText("data.csv", csv.ToString());
+            Console.WriteLine("Done & Done");
         }
 
         private List<double> compareMethods(int vehicles, int frequency, int simTime, double medianDist, double stdDev, double gridWidth) {
@@ -63,21 +64,21 @@ namespace autoTaxi {
             Form1 permutationForm = configureForm(requests, cars, Dispatcher.permutationAssign, gridWidth, "Permutation Algorithm");
 
             var forms = new List<Form>();
-            forms.Add(greedyForm);
-            forms.Add(closestPathForm);
-            //forms.Add(permutationForm);
+            //forms.Add(greedyForm);
+            //forms.Add(closestPathForm);
+            forms.Add(permutationForm);
 
             List<double> data = new List<double>(6);
             foreach(var form in forms) {
-                //form.FormClosed += onFormClosed;
-                ((Form1)form).simulation(0, false); //ignore warning
-                string miles = ((Form1)form).textBox1.Text;
-                Console.WriteLine(miles);
-                miles = miles.Remove(0, 4);
-                data.Add(double.Parse(miles));
-                data.Add(((Form1)form).netOverIdealTime);
-                //Task.Run(async () => await ((Form1)form).simulation(0, false));
-                //form.Show();
+                form.FormClosed += onFormClosed;
+                //((Form1)form).simulation(0, false); //ignore warning
+                //string miles = ((Form1)form).textBox1.Text;
+                //Console.WriteLine(miles);
+                //miles = miles.Remove(0, 4);
+                //data.Add(double.Parse(miles));
+                //data.Add(((Form1)form).netOverIdealTime);
+                Task.Run(async () => await ((Form1)form).simulation(0, false));
+                form.Show();
             }
 
             return data;
